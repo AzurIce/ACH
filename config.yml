@@ -1,0 +1,6 @@
+command_prefix: '#'
+backup_dir: ./Backups
+servers:
+    serverName:
+        execOptions: -Xms4G -Xmx4G
+        execPath: H:/Projects-Go/MCSHGo/Servers/1.16.5/server.jar
