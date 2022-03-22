@@ -172,7 +172,7 @@ func FrontendFileHandler() gin.HandlerFunc {
 		path := c.Request.URL.Path
 
 		// API 跳过
-		if strings.HasPrefix(path, "/api") || strings.HasPrefix(path, "/custom") || strings.HasPrefix(path, "/dav") || path == "/manifest.json" {
+		if strings.HasPrefix(path, "/api") {
 			c.Next()
 			return
 		}
