@@ -9,6 +9,10 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+
+	_ "ach/statik"
+
+	"github.com/rakyll/statik/fs"
 )
 
 // ACHCore ...
@@ -16,11 +20,12 @@ type ACHCore struct {
 	wg           sync.WaitGroup
 	Servers      map[string]*Server
 	config       *ACHConfig
-	outputBuffer []string
+	outputBuffer [1024]string
 	outputCursor int
 	router       *gin.Engine
-	ws           *websocket.Conn
+	wsList       []*websocket.Conn
 	OutChan      chan string
+	fs           http.FileSystem
 }
 
 // Ach ...
@@ -30,7 +35,7 @@ func Ach() *ACHCore {
 		Servers:      make(map[string]*Server),
 		config:       DefaultACHConfig(),
 		OutChan:      make(chan string, 8),
-		ws:           nil,
+		wsList:       make([]*websocket.Conn, 0),
 		outputCursor: 0,
 	}
 	ach.init()
@@ -63,14 +68,27 @@ func (ach *ACHCore) handleOut() {
 		str := <-ach.OutChan
 		log.Print(str)
 		ach.pushToBuffer(str)
-		if (ach.ws != nil) {
-			err := ach.ws.WriteMessage(websocket.TextMessage, []byte(str))
-			if err != nil {
-				// Not established.
+		for index, ws := range ach.wsList {
+			if ws != nil {
+				sendMessage(ws, str)
+			} else {
+				if (index < len(ach.wsList) - 1) {
+					ach.wsList = append(ach.wsList[:index], ach.wsList[index+1:]...)
+				} else {
+					ach.wsList = append(ach.wsList[:index])
+				}
 			}
 		}
 	}
 }
+
+func sendMessage(ws *websocket.Conn, str string) {
+	err := ws.WriteMessage(websocket.TextMessage, []byte(str))
+	if err != nil {
+		// Not established.
+	}
+}
+
 
 func (ach *ACHCore) processInput(line []byte) {
 	// 转发正则
@@ -98,19 +116,22 @@ var upgrader = websocket.Upgrader{
 }
 
 func (ach *ACHCore) handler(c *gin.Context) {
-	var err error
-	ach.ws, err = upgrader.Upgrade(c.Writer, c.Request, nil)
+	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Print("upgrade:", err)
 		return
 	}
-	ach.ws.WriteMessage(websocket.TextMessage, []byte(strings.Join(ach.outputBuffer, "")))
-	defer func(){
-		ach.ws.Close()
-		ach.ws = nil
+	ws.WriteMessage(
+		websocket.TextMessage,
+		[]byte(strings.Join(ach.outputBuffer[ach.outputCursor:], "")+strings.Join(ach.outputBuffer[:ach.outputCursor], "")),
+	)
+	ach.wsList = append(ach.wsList, ws)
+	defer func() {
+		ws.Close()
+		ws = nil
 	}()
 	for {
-		_, str, err := ach.ws.ReadMessage()
+		_, str, err := ws.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
 			break
@@ -122,15 +143,24 @@ func (ach *ACHCore) handler(c *gin.Context) {
 // --- init ---
 
 func (ach *ACHCore) init() {
+	ach.initStaticFS()
 	ach.initRouter()
 	ach.initConfig()
 	ach.initServers()
 	os.Mkdir(ach.config.BackupDir, 0666)
 }
 
+func (ach *ACHCore) initStaticFS() {
+	var err error
+	ach.fs, err = fs.New()
+	if err != nil {
+		log.Panicln(err)
+	}
+}
+
 func (ach *ACHCore) initRouter() {
 	ach.router = gin.Default()
-	ach.router.Use(FrontendFileHandler())
+	ach.router.Use(ach.FrontendFileHandler())
 	// ach.router.Static("/", "./assets")
 	ach.router.GET("/api/console", ach.handler)
 }
@@ -154,20 +184,23 @@ func (ach *ACHCore) initServers() {
 }
 
 func (ach *ACHCore) println(str string) {
-// 	log.Println(str)
+	// 	log.Println(str)
 	ach.OutChan <- str + "\n"
-// 	ach.pushToBuffer(str + "\n")
+	// 	ach.pushToBuffer(str + "\n")
 }
 
 func (ach *ACHCore) pushToBuffer(str string) {
-	ach.outputBuffer = append(ach.outputBuffer, str)
-	if len(ach.outputBuffer) > 1024 {
-		ach.outputBuffer = ach.outputBuffer[1:]
+	// ach.outputBuffer = append(ach.outputBuffer, str)
+	ach.outputBuffer[ach.outputCursor] = str
+	if ach.outputCursor == 1024 {
+		ach.outputCursor = 0
+	} else {
+		ach.outputCursor++
 	}
 }
 
-func FrontendFileHandler() gin.HandlerFunc {
-	fileServer := http.FileServer(gin.Dir("./assets", false))
+func (ach *ACHCore) FrontendFileHandler() gin.HandlerFunc {
+	fileServer := http.FileServer(ach.fs)
 	return func(c *gin.Context) {
 		path := c.Request.URL.Path
 
