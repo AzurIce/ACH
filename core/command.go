@@ -82,7 +82,7 @@ func load(server *Server, i int) error {
 	if err != nil {
 		log.Printf("[%s/ERROR]: Backup loading failed.\n", server.name)
 		server.keepAlive = false
-		server.ach.wg.Done()
+		server.ach.activeServerCount.Done()
 		return err
 	}
 	log.Printf("[%s/INFO]: Backup loading successed.\n", server.name)

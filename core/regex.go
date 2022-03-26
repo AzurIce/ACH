@@ -8,14 +8,14 @@ import (
 var ForwardReg *regexp.Regexp
 
 // var commandReg *regexp.Regexp
-var playerOutputReg *regexp.Regexp
+var PlayerOutputReg *regexp.Regexp
 
-var outputFormatReg *regexp.Regexp
+var OutputFormatReg *regexp.Regexp
 
 func init() {
 	log.Println("MCSH[init/INFO]: Initializing regexps...")
 	ForwardReg = regexp.MustCompile(`(.+?) *\| *(.+)`)
 	// commandReg = regexp.MustCompile("^" + string(MCSHConfig.CommandPrefix) + "(.*)")
-	playerOutputReg = regexp.MustCompile(`\]: <(.*?)> (.*)`)
-	outputFormatReg = regexp.MustCompile(`(\[\d\d:\d\d:\d\d\]) *\[.+?\/(.+?)\]`)
+	PlayerOutputReg = regexp.MustCompile(`\]: <(.*?)> (.*)`)
+	OutputFormatReg = regexp.MustCompile(`(\[\d\d:\d\d:\d\d\]) *\[.+?\/(.+?)\]`)
 }

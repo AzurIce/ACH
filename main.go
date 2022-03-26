@@ -6,6 +6,6 @@ import (
 
 func main() {
 	ach := core.Ach()
-	ach.Run()
-	// ach.TestRun()
+	// ach.Run()
+	ach.TestRouter()
 }

@@ -55,6 +55,39 @@ func (server *Server) initCmd() {
 	server.cmd = cmd
 }
 
+
+type serverIsAlreadyRunningError struct {}
+func (e *serverIsAlreadyRunningError) Error() string{
+	return "Server is already running."
+}
+
+// If successful started, return nil.
+func (server *Server) SStart() error {
+	if server.running {
+		return &serverIsAlreadyRunningError{}
+	}
+	server.initCmd()
+	server.attachStd()
+	// Start
+	if err := server.cmd.Start(); err != nil {
+		return err
+		// log.Panicf("server<%s>: Error when starting:\n%s", server.name, err.Error())
+	}
+	server.running = true
+	return nil
+}
+
+// If successful ended, return nil.
+func (server *Server) WWait() error{
+	if err := server.cmd.Wait(); err != nil {
+		return err
+		// log.Panicf("server<%s>: Error when running:\n%s", server.name, err.Error())
+	}
+	server.running = false
+	return nil
+}
+
+
 // Start ...
 func (server *Server) Start() {
 	defer func() {
@@ -64,7 +97,7 @@ func (server *Server) Start() {
 	server.attachStd()
 	// Start
 	if !server.keepAlive {
-		server.ach.wg.Add(1)
+		server.ach.activeServerCount.Add(1)
 	}
 	server.running = true
 	if err := server.cmd.Start(); err != nil {
@@ -82,7 +115,7 @@ func (server *Server) Wait() {
 	}
 	server.running = false
 	if !server.keepAlive {
-		server.ach.wg.Done()
+		server.ach.activeServerCount.Done()
 	}
 }
 
@@ -129,7 +162,7 @@ func (server *Server) processOut() {
 		} else {
 			line = line[:len(line)-1]
 		}
-		if res := playerOutputReg.FindStringSubmatch(line); len(res) > 1 { // Player
+		if res := PlayerOutputReg.FindStringSubmatch(line); len(res) > 1 { // Player
 			player := res[1]
 			text := res[2]
 			log.Println(player + ": " + text)
@@ -137,7 +170,7 @@ func (server *Server) processOut() {
 				server.cmdChan <- text[1:]
 			}
 		}
-		str := outputFormatReg.ReplaceAllString(line, "["+server.name+"/$2]") // 格式化读入的字符串
+		str := OutputFormatReg.ReplaceAllString(line, "["+server.name+"/$2]") // 格式化读入的字符串
 		server.ach.println(str)
 		// server.ach.OutChan <- str // 嘿嘿！
 		// log.Print(str)

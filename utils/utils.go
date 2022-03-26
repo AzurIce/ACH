@@ -32,6 +32,15 @@ func CopyFile(src string, dst string) error {
 	return err
 }
 
+// DeletePath
+func DeletePath(path string) error {
+	err := os.RemoveAll(path)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // CopyDir ...
 func CopyDir(srcDir string, dstDir string) error {
 	// fmt.Print([]byte(dstDir))
