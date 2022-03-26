@@ -56,17 +56,21 @@ func (ach *ACHCore) Run() {
 
 func (ach *ACHCore) startAllServers() {
 	for _, server := range ach.Servers {
-		go ach.runServer(server)
+		server.Start()
+		go server.Wait()
+		// if !server.keepAlive {
+		// 	ach.activeServerCount.Add(1)
+		// }
+		// go ach.runServer(server)
 	}
 }
 
 func (ach *ACHCore) runServer(server *Server) {
+	log.Println("added")
 	if err := server.SStart(); err != nil {
 		log.Printf("server<%s>: Error when starting:\n%s\n", server.name, err)
+		ach.activeServerCount.Done()
 		return
-	}
-	if !server.keepAlive {
-		ach.activeServerCount.Add(1)
 	}
 
 	if err := server.WWait(); err != nil {
@@ -97,7 +101,7 @@ func (ach *ACHCore) handleOut() {
 	}
 }
 
-// 
+//
 func (ach *ACHCore) processInput(line []byte) {
 	// 转发正则
 	res := ForwardReg.FindSubmatch(line)
