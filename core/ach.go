@@ -164,7 +164,7 @@ func (ach *ACHCore) println(str string) {
 func (ach *ACHCore) pushToBuffer(str string) {
 	// ach.outputBuffer = append(ach.outputBuffer, str)
 	ach.outputBuffer[ach.outputCursor] = str
-	if ach.outputCursor == 1024 {
+	if ach.outputCursor == 1023 {
 		ach.outputCursor = 0
 	} else {
 		ach.outputCursor++
