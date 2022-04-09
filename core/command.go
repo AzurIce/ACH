@@ -11,6 +11,7 @@ import (
 	"strings"
 	"time"
 
+	"ach/bootstrap"
 	"ach/utils"
 )
 
@@ -29,7 +30,7 @@ func backup(server *Server, args []string) error {
 		if len(args) > 1 {
 			comment = comment + " " + strings.Join(args[1:], " ")
 		}
-		dst := path.Join(server.ach.config.BackupDir, fmt.Sprintf("%s - %s", server.name, comment))
+		dst := path.Join(bootstrap.Config.BackupDir, fmt.Sprintf("%s - %s", server.name, comment))
 		src := path.Join(filepath.Dir(server.config.ExecPath), "world")
 		log.Printf("[%s/INFO]: Making backup to %s...\n", server.name, dst)
 		server.Write(fmt.Sprintf("say Making backup to %s...", dst))
@@ -43,7 +44,7 @@ func backup(server *Server, args []string) error {
 		server.Write("say Backup making successed.")
 	} else if args[0] == "" || args[0] == "list" {
 		// log.Printf("[%s/INFO]: Listing backup.\n", server.ServerName)
-		res, _ := ioutil.ReadDir(server.ach.config.BackupDir)
+		res, _ := ioutil.ReadDir(bootstrap.Config.BackupDir)
 		for i, f := range res {
 			fmt.Printf("[%v] %s\n", i, f.Name())
 			server.Write(fmt.Sprintf("say [%v] %s", i, f.Name()))
@@ -64,7 +65,7 @@ func backup(server *Server, args []string) error {
 
 func load(server *Server, i int) error {
 	// TODO: Err handle
-	res, _ := ioutil.ReadDir(server.ach.config.BackupDir)
+	res, _ := ioutil.ReadDir(bootstrap.Config.BackupDir)
 	backup(server, []string{"make", fmt.Sprintf("Before loading %s", res[i].Name())})
 
 	server.keepAlive = true
@@ -73,7 +74,7 @@ func load(server *Server, i int) error {
 		time.Sleep(time.Second)
 	}
 
-	backupSavePath := path.Join(server.ach.config.BackupDir, res[i].Name())
+	backupSavePath := path.Join(bootstrap.Config.BackupDir, res[i].Name())
 	serverSavePath := path.Join(filepath.Dir(server.config.ExecPath), "world")
 	os.RemoveAll(serverSavePath)
 
@@ -82,7 +83,6 @@ func load(server *Server, i int) error {
 	if err != nil {
 		log.Printf("[%s/ERROR]: Backup loading failed.\n", server.name)
 		server.keepAlive = false
-		server.ach.activeServerCount.Done()
 		return err
 	}
 	log.Printf("[%s/INFO]: Backup loading successed.\n", server.name)

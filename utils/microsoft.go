@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -17,7 +18,42 @@ type PlayerInfo struct {
 	Name string
 }
 
-func GetPlayerInfo(mcToken string) PlayerInfo {
+func GetPlayerInfoByCode(code string) (PlayerInfo, error) {
+	var playerInfo PlayerInfo
+
+	// 获取账号对应 UUID
+	// 1. Code -> Token
+	token, err := GetToken(code)
+	if err != nil {
+		return playerInfo, err
+	}
+	// 2. Token -> XBL Token
+	xblRes, err := GetXBLToken(token)
+	if err != nil {
+		return playerInfo, err
+	}
+	// 3. XBL Token -> XSTS Token
+	xstsRes, err := GetXSTSToken(xblRes.Token)
+	if err != nil {
+		return playerInfo, err
+	}
+	// 4. XSTS Token + UHS -> MC Token
+	mcToken, err := GetMCToken(xstsRes)
+	if err != nil {
+		return playerInfo, err
+	}
+	// 5. MC Token -> Player Info
+	playerInfo, err = GetPlayerInfo(mcToken)
+	if err != nil {
+		return playerInfo, err
+	}
+
+	return playerInfo, nil
+}
+
+func GetPlayerInfo(mcToken string) (PlayerInfo, error) {
+	var playerInfo PlayerInfo
+	log.Println("获取player info...")
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			Renegotiation:      tls.RenegotiateOnceAsClient,
@@ -39,31 +75,38 @@ func GetPlayerInfo(mcToken string) PlayerInfo {
 	res, err := client.Do(req)
 
 	if err != nil || res.StatusCode != http.StatusOK {
-		log.Panicf("获取player info: 请求失败, %s\n", err)
+		log.Printf("获取player info: 请求失败, %s\n", err)
+		return playerInfo, errors.New("err")
 	}
 
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Panicf("获取player info: 读取Body失败, %s\n", err)
+		log.Printf("获取player info: 读取Body失败, %s\n", err)
+		return playerInfo, errors.New("err")
 	}
 	// log.Println(string(body))
 
 	var data map[string]interface{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		log.Panicf("获取player info: json解析失败, %s\n", err)
+		log.Printf("获取player info: json解析失败, %s\n", err)
+		return playerInfo, errors.New("err")
 	}
 	// log.Println(data["Token"].(string))
 	// log.Println(data["DisplayClaims"].(map[string]interface{})["xui"].([]interface{})[0].(map[string]interface{})["uhs"].(string))
 
-	return PlayerInfo{
+	log.Println("获取完成")
+	playerInfo = PlayerInfo{
 		data["id"].(string),
 		data["name"].(string),
 	}
+	return playerInfo, nil
 }
 
-func GetMCToken(xsts XSTSTokenResponse) string {
+func GetMCToken(xsts XSTSTokenResponse) (string, error) {
+	var mcToken string
+	log.Println("获取mc token...")
 
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
@@ -90,25 +133,30 @@ func GetMCToken(xsts XSTSTokenResponse) string {
 	res, err := client.Do(req)
 
 	if err != nil || res.StatusCode != http.StatusOK {
-		log.Panicf("获取mc token: 请求失败, %s\n", err)
+		log.Printf("获取mc token: 请求失败, %s\n", err)
+		return mcToken, errors.New("err")
 	}
 
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Panicf("获取mc token: 读取Body失败, %s\n", err)
+		log.Printf("获取mc token: 读取Body失败, %s\n", err)
+		return mcToken, errors.New("err")
 	}
 	// log.Println(string(body))
 
 	var data map[string]interface{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		log.Panicf("获取mc token: json解析失败, %s\n", err)
+		log.Printf("获取mc token: json解析失败, %s\n", err)
+		return mcToken, errors.New("err")
 	}
 	// log.Println(data["Token"].(string))
 	// log.Println(data["DisplayClaims"].(map[string]interface{})["xui"].([]interface{})[0].(map[string]interface{})["uhs"].(string))
 
-	return data["access_token"].(string)
+	log.Println("获取完成")
+	mcToken = data["access_token"].(string)
+	return mcToken, nil
 }
 
 func XSTSTokenRequestBody(xblToken string) map[string]interface{} {
@@ -127,7 +175,9 @@ type XSTSTokenResponse struct {
 	Uhs   string
 }
 
-func GetXSTSToken(xblToken string) XSTSTokenResponse {
+func GetXSTSToken(xblToken string) (XSTSTokenResponse, error) {
+	var xstsTokenResponse XSTSTokenResponse
+	log.Println("获取xsts token...")
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			Renegotiation:      tls.RenegotiateOnceAsClient,
@@ -150,28 +200,33 @@ func GetXSTSToken(xblToken string) XSTSTokenResponse {
 	res, err := client.Do(req)
 
 	if err != nil || res.StatusCode != http.StatusOK {
-		log.Panicf("获取xsts token: 请求失败, %s\n", err)
+		log.Printf("获取xsts token: 请求失败, %s\n", err)
+		return xstsTokenResponse, errors.New("err")
 	}
 
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Panicf("获取xsts token: 读取Body失败, %s\n", err)
+		log.Printf("获取xsts token: 读取Body失败, %s\n", err)
+		return xstsTokenResponse, errors.New("err")
 	}
 	// log.Println(string(body))
 
 	var data map[string]interface{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		log.Panicf("获取xsts token: json解析失败, %s\n", err)
+		log.Printf("获取xsts token: json解析失败, %s\n", err)
+		return xstsTokenResponse, errors.New("err")
 	}
 	// log.Println(data["Token"].(string))
 	// log.Println(data["DisplayClaims"].(map[string]interface{})["xui"].([]interface{})[0].(map[string]interface{})["uhs"].(string))
 
-	return XSTSTokenResponse{
+	log.Println("获取完成")
+	xstsTokenResponse = XSTSTokenResponse{
 		data["Token"].(string),
 		data["DisplayClaims"].(map[string]interface{})["xui"].([]interface{})[0].(map[string]interface{})["uhs"].(string),
 	}
+	return xstsTokenResponse, nil
 }
 
 type XBLTokenResponse struct {
@@ -191,7 +246,10 @@ func XBLTokenRequestBody(token string) map[string]interface{} {
 	return data
 }
 
-func GetXBLToken(token string) XBLTokenResponse {
+func GetXBLToken(token string) (XBLTokenResponse, error) {
+	var xblTokenResponse XBLTokenResponse
+
+	log.Println("获取xbl token...")
 	tr := &http.Transport{
 		TLSClientConfig: &tls.Config{
 			Renegotiation:      tls.RenegotiateOnceAsClient,
@@ -214,31 +272,39 @@ func GetXBLToken(token string) XBLTokenResponse {
 	res, err := client.Do(req)
 
 	if err != nil || res.StatusCode != http.StatusOK {
-		log.Panicf("获取xbox token: 请求失败, %s\n", err)
+		log.Printf("获取xbox token: 请求失败, %s\n", err)
+		return xblTokenResponse, errors.New("err")
 	}
 
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Panicf("获取xbox token: 读取Body失败, %s\n", err)
+		log.Printf("获取xbox token: 读取Body失败, %s\n", err)
+		return xblTokenResponse, errors.New("err")
 	}
 	// log.Println(string(body))
 
 	var data map[string]interface{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		log.Panicf("获取xbox token: json解析失败, %s\n", err)
+		log.Printf("获取xbox token: json解析失败, %s\n", err)
+		return xblTokenResponse, errors.New("err")
 	}
 	// log.Println(data["Token"].(string))
 	// log.Println(data["DisplayClaims"].(map[string]interface{})["xui"].([]interface{})[0].(map[string]interface{})["uhs"].(string))
 
-	return XBLTokenResponse{
+	log.Println("获取完成")
+	xblTokenResponse = XBLTokenResponse{
 		data["Token"].(string),
 		data["DisplayClaims"].(map[string]interface{})["xui"].([]interface{})[0].(map[string]interface{})["uhs"].(string),
 	}
+	return xblTokenResponse, nil
 }
 
-func GetToken(code string) string {
+func GetToken(code string) (string, error) {
+	var token string
+
+	log.Println("获取token...")
 	res, err := http.Post("https://login.live.com/oauth20_token.srf",
 		"application/x-www-form-urlencoded",
 		strings.NewReader(
@@ -246,23 +312,28 @@ func GetToken(code string) string {
 		),
 	)
 	if err != nil || res.StatusCode != http.StatusOK {
-		log.Panicf("获取token: 请求失败, %s\n", err)
+		log.Printf("获取token: 请求失败, %s\n", err)
+		return token, errors.New("err")
 	}
 
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		log.Panicf("获取token: 读取Body失败, %s\n", err)
+		log.Printf("获取token: 读取Body失败, %s\n", err)
+		return token, errors.New("err")
 	}
 	// log.Println(string(body))
 
 	var data map[string]interface{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
-		log.Panicf("获取token: json解析失败，%s\n", err)
+		log.Printf("获取token: json解析失败, %s\n", err)
+		return token, errors.New("err")
 	}
+	token = data["access_token"].(string)
 	// log.Println(data["access_token"].(string))
 	// log.Println(data["refresh_token"].(string))
 
-	return data["access_token"].(string)
+	log.Println("获取完成")
+	return token, nil
 }

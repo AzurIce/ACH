@@ -1,9 +1,12 @@
 package utils
 
 import (
+	"crypto/sha1"
+	"encoding/hex"
 	"io"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"os"
 	"path"
 	"strings"
@@ -81,4 +84,25 @@ func ForwardStd(f io.ReadCloser, c chan string) {
 			cache = lines[len(lines)-1] //最后一行下次循环处理
 		}
 	}
+}
+
+func RandStringRunes(n int) string {
+	rand.Seed(time.Now().Unix())
+	var letterRunes = []rune("1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
+
+func EncodePassword(password string, salt string) string {
+	//计算 Salt 和密码组合的SHA1摘要
+	hash := sha1.New()
+	hash.Write([]byte(password + salt))
+	bs := hex.EncodeToString(hash.Sum(nil))
+
+	//存储 Salt 值和摘要， ":"分割
+	return salt + ":" + string(bs)
 }

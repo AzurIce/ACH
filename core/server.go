@@ -1,6 +1,8 @@
 package core
 
 import (
+	"ach/bootstrap"
+	"ach/config"
 	"ach/utils"
 	"io"
 	"log"
@@ -13,7 +15,7 @@ import (
 type Server struct {
 	ach                      *ACHCore
 	name                     string
-	config                   ServerConfig
+	config                   config.ServerConfig
 	running                  bool
 	keepAlive                bool
 	InChan, OutChan, ErrChan chan string
@@ -23,7 +25,7 @@ type Server struct {
 }
 
 // NewServer ...
-func NewServer(name string, config ServerConfig, ach *ACHCore) *Server {
+func NewServer(name string, config config.ServerConfig, ach *ACHCore) *Server {
 	server := &Server{
 		ach:       ach,
 		name:      name,
@@ -96,9 +98,6 @@ func (server *Server) Start() {
 	server.initCmd()
 	server.attachStd()
 	// Start
-	if !server.keepAlive {
-		server.ach.activeServerCount.Add(1)
-	}
 	server.running = true
 	if err := server.cmd.Start(); err != nil {
 		log.Panicf("server<%s>: Error when starting:\n%s", server.name, err.Error())
@@ -114,9 +113,6 @@ func (server *Server) Wait() {
 		log.Panicf("server<%s>: Error when running:\n%s", server.name, err.Error())
 	}
 	server.running = false
-	if !server.keepAlive {
-		server.ach.activeServerCount.Done()
-	}
 }
 
 func (server *Server) attachStd() {
@@ -146,7 +142,7 @@ func (server *Server) handleCommand() {
 func (server *Server) processIn() {
 	for {
 		line := <-server.InChan
-		if line[:1] == server.ach.config.CommandPrefix {
+		if line[:1] == bootstrap.Config.CommandPrefix {
 			server.cmdChan <- line[1:]
 		} else if server.running {
 			server.stdin.Write([]byte(line + "\n"))
@@ -166,7 +162,7 @@ func (server *Server) processOut() {
 			player := res[1]
 			text := res[2]
 			log.Println(player + ": " + text)
-			if text[:1] == server.ach.config.CommandPrefix {
+			if text[:1] == bootstrap.Config.CommandPrefix {
 				server.cmdChan <- text[1:]
 			}
 		}

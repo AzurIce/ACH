@@ -3,4 +3,5 @@ Backups/
 statik/
 *.db
 *.log
+.builds/
 go.sum
