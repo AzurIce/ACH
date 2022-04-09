@@ -7,7 +7,13 @@ require (
 	github.com/gorilla/websocket v1.5.0
 )
 
-require github.com/rakyll/statik v0.1.7 // indirect
+require (
+	github.com/jinzhu/inflection v1.0.0 // indirect
+	github.com/jinzhu/now v1.1.4 // indirect
+	github.com/mattn/go-sqlite3 v1.14.9 // indirect
+	github.com/rakyll/statik v0.1.7 // indirect
+	gorm.io/gorm v1.23.4 // indirect
+)
 
 require (
 	github.com/gin-contrib/cors v1.3.1
@@ -17,6 +23,7 @@ require (
 	github.com/go-playground/validator/v10 v10.10.1 // indirect
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang/protobuf v1.5.2 // indirect
+	github.com/jinzhu/gorm v1.9.16
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
@@ -29,4 +36,5 @@ require (
 	google.golang.org/protobuf v1.26.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b
+	gorm.io/driver/sqlite v1.3.1
 )

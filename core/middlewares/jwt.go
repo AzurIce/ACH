@@ -10,7 +10,7 @@ import (
 
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		if c.Request.URL.Path == "/api/login" {
+		if c.Request.URL.Path == "/api/login" || c.Request.URL.Path == "/api/newlogin" {
 			c.Next()
 			return
 		}

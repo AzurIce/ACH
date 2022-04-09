@@ -9,9 +9,12 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 
+	"ach/core/models"
 	_ "ach/statik"
 
 	"github.com/rakyll/statik/fs"
+
+	"gorm.io/gorm"
 )
 
 // ACHCore ...
@@ -25,11 +28,7 @@ type ACHCore struct {
 	OutChan           chan string
 	fs                http.FileSystem
 	router            *gin.Engine
-}
-
-// TestRouter...
-func (ach *ACHCore) TestRouter() {
-	ach.router.Run(":8888")
+	db                *gorm.DB
 }
 
 // Ach ...
@@ -46,12 +45,12 @@ func Ach() *ACHCore {
 	return ach
 }
 
-// Run...
+// Run ...
 func (ach *ACHCore) Run() {
-	go ach.router.Run(":8888")
-	go ach.handleOut()
-	ach.startAllServers()
-	ach.activeServerCount.Wait()
+	ach.router.Run(":8888")
+	// go ach.handleOut()
+	// ach.startAllServers()
+	// ach.activeServerCount.Wait()
 }
 
 func (ach *ACHCore) startAllServers() {
@@ -66,7 +65,6 @@ func (ach *ACHCore) startAllServers() {
 }
 
 func (ach *ACHCore) runServer(server *Server) {
-	log.Println("added")
 	if err := server.SStart(); err != nil {
 		log.Printf("server<%s>: Error when starting:\n%s\n", server.name, err)
 		ach.activeServerCount.Done()
@@ -94,7 +92,7 @@ func (ach *ACHCore) handleOut() {
 				if index < len(ach.wsList)-1 {
 					ach.wsList = append(ach.wsList[:index], ach.wsList[index+1:]...)
 				} else {
-					ach.wsList = append(ach.wsList[:index])
+					ach.wsList = ach.wsList[:index]
 				}
 			}
 		}
@@ -126,6 +124,8 @@ func (ach *ACHCore) init() {
 	ach.initRouter()
 	ach.initConfig()
 	ach.initServers()
+	models.Init()
+	// ach.initDB()
 	os.Mkdir(ach.config.BackupDir, 0666)
 }
 

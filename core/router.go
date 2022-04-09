@@ -1,12 +1,15 @@
 package core
 
 import (
+	// "io"
 	"log"
 	"net/http"
+	// "os"
 	"strings"
 	"time"
 
 	"ach/core/middlewares"
+	"ach/core/routers/controllers"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -15,6 +18,8 @@ import (
 )
 
 func (ach *ACHCore) initRouter() {
+	// logfile, _ := os.Create("gin.log");
+	// gin.DefaultWriter = io.MultiWriter(logfile)
 	ach.router = gin.Default()
 	config := cors.DefaultConfig()
 	config.ExposeHeaders = []string{"Authorization"}
@@ -25,6 +30,9 @@ func (ach *ACHCore) initRouter() {
 	ach.router.Use(middlewares.Frontend(ach.fs), middlewares.JWTAuth())
 	// ach.router.Static("/", "./assets")
 	ach.router.POST("/api/login", ach.loginHandler)
+
+	ach.router.POST("/api/newlogin", controllers.UserLogin)
+
 	ach.router.GET("/api/console", ach.handler)
 }
 
