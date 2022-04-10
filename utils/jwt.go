@@ -1,8 +1,10 @@
 package utils
 
 import (
+	"strings"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
 )
 
@@ -23,4 +25,30 @@ func CreateToken(uuid string) (string, error) {
 	}
 
 	return t.SignedString([]byte("azurcraft"))
+}
+
+func GetTokenStr(c *gin.Context) string {
+	tokenStr := ""
+	if c.Request.URL.Path == "/api/console" {
+		tokenStr = c.Query("token")
+	} else {
+		tokenStr = strings.ReplaceAll(c.Request.Header.Get("Authorization"), "Bearer ", "")
+	}
+	return tokenStr
+}
+
+func DecodeTokenStr(tokenStr string) (*jwt.Token, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return []byte("azurcraft"), nil
+	})
+	if err != nil {
+		return token, err
+	}
+	return token, nil
+}
+
+func MustGetClaims(c *gin.Context) *MyCustomClaims {
+	tokenStr := GetTokenStr(c)
+	token, _ := DecodeTokenStr(tokenStr)
+	return token.Claims.(*MyCustomClaims)
 }

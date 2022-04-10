@@ -11,7 +11,7 @@ func main() {
 
 	api := routers.InitRouter()
 
-	api.Run()
+	api.Run(":8888")
 
 	// ach.TestRun()
 	// ach.Run()
