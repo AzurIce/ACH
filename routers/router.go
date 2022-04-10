@@ -1,7 +1,7 @@
 package routers
 
 import (
-	// "ach/bootstrap"
+	"ach/bootstrap"
 	"ach/middlewares"
 	"ach/routers/controllers"
 
@@ -17,7 +17,7 @@ func InitRouter() *gin.Engine {
 	config.AllowAllOrigins = true
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
 	r.Use(cors.New(config))
-	// r.Use(middlewares.Frontend(bootstrap.StaticFS))
+	r.Use(middlewares.Frontend(bootstrap.StaticFS))
 
 	api := r.Group("/api")
 

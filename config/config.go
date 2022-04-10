@@ -33,22 +33,27 @@ func DefaultACHConfig() *ACHConfig {
 	}
 }
 
-func (config *ACHConfig)Read() error {
+func  ReadConfig() (*ACHConfig, error) {
+	config := &ACHConfig{}
+
+	log.Println("[config]: Reading config.yml...")
 	configYaml, err := ioutil.ReadFile("./config.yml")
 	if err != nil { // 读取文件发生错误
-		return err
+		return DefaultACHConfig(), err
 	}
+	// log.Print("[config]: content:", string(configYaml), '\n')
 	// 可以读取config.yml，清空ach.config
-	config = &ACHConfig{}
+	log.Println("[config]: Parsing...")
 	err = yaml.Unmarshal(configYaml, config)
 	// fmt.Println(ach.config)
 	if err != nil {
 		log.Println(err)
 	}
-	return nil
+	log.Print("[config]: config:", config, '\n')
+	return config, nil
 }
 
-func (config *ACHConfig)Save() {
+func (config *ACHConfig) Save() {
 	data, _ := yaml.Marshal(config)
 	ioutil.WriteFile("./config.yml", data, 0666)
 }

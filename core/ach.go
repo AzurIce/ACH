@@ -50,7 +50,9 @@ func Ach() *ACHCore {
 	return ach
 }
 
-func (ach *ACHCore) startAllServers() {
+func (ach *ACHCore) StartAllServers() {
+	log.Println("[ACHCore]: Starting all servers")
+	go ach.handleOut()
 	for _, server := range ach.Servers {
 		server.Start()
 		go server.Wait()

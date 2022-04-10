@@ -12,6 +12,7 @@ import (
 func AdminCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
+		log.Println("[middleware/AdminCheck]")
 		claims := utils.MustGetClaims(c)
 		log.Println(claims)
 

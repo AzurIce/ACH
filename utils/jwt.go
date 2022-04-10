@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"log"
 	"strings"
 	"time"
 
@@ -29,7 +30,7 @@ func CreateToken(uuid string) (string, error) {
 
 func GetTokenStr(c *gin.Context) string {
 	tokenStr := ""
-	if c.Request.URL.Path == "/api/console" {
+	if c.Request.URL.Path == "/api/admin/server/console" {
 		tokenStr = c.Query("token")
 	} else {
 		tokenStr = strings.ReplaceAll(c.Request.Header.Get("Authorization"), "Bearer ", "")
@@ -48,7 +49,9 @@ func DecodeTokenStr(tokenStr string) (*jwt.Token, error) {
 }
 
 func MustGetClaims(c *gin.Context) *MyCustomClaims {
+	log.Println("[MustGetClaims]")
 	tokenStr := GetTokenStr(c)
+	log.Printf("[MustGetClaims] tokenStr: %s\n", tokenStr)
 	token, _ := DecodeTokenStr(tokenStr)
 	return token.Claims.(*MyCustomClaims)
 }
