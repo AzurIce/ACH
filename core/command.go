@@ -68,7 +68,6 @@ func load(server *Server, i int) error {
 	res, _ := ioutil.ReadDir(bootstrap.Config.BackupDir)
 	backup(server, []string{"make", fmt.Sprintf("Before loading %s", res[i].Name())})
 
-	server.keepAlive = true
 	server.Write("stop")
 	for server.running {
 		time.Sleep(time.Second)
@@ -82,13 +81,11 @@ func load(server *Server, i int) error {
 	err := utils.CopyDir(backupSavePath, serverSavePath)
 	if err != nil {
 		log.Printf("[%s/ERROR]: Backup loading failed.\n", server.name)
-		server.keepAlive = false
 		return err
 	}
 	log.Printf("[%s/INFO]: Backup loading successed.\n", server.name)
 
 	server.Start()
-	server.keepAlive = false
 	go server.Wait()
 
 	return nil
@@ -106,7 +103,6 @@ func start(server *Server, args []string) error {
 }
 
 func restart(server *Server, args []string) error {
-	server.keepAlive = true
 	server.Write("stop")
 	for server.running {
 		time.Sleep(time.Second)

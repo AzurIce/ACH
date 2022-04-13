@@ -4,6 +4,7 @@ import (
 	"ach/bootstrap"
 	"ach/config"
 	"ach/utils"
+	"errors"
 	"io"
 	"log"
 	"os/exec"
@@ -13,11 +14,9 @@ import (
 
 // Server ...
 type Server struct {
-	ach                      *ACHCore
 	name                     string
 	config                   config.ServerConfig
 	running                  bool
-	keepAlive                bool
 	InChan, OutChan, ErrChan chan string
 	cmdChan                  chan string
 	stdin                    io.WriteCloser
@@ -27,11 +26,9 @@ type Server struct {
 // NewServer ...
 func NewServer(name string, config config.ServerConfig, ach *ACHCore) *Server {
 	server := &Server{
-		ach:       ach,
 		name:      name,
 		config:    config,
 		running:   false,
-		keepAlive: false,
 		InChan:    make(chan string, 8),
 		OutChan:   make(chan string, 8),
 		ErrChan:   make(chan string, 8),
@@ -58,15 +55,12 @@ func (server *Server) initCmd() {
 }
 
 
-type serverIsAlreadyRunningError struct {}
-func (e *serverIsAlreadyRunningError) Error() string{
-	return "Server is already running."
-}
+var ErrServerIsRunning = errors.New("Server is already running")
 
 // If successful started, return nil.
 func (server *Server) SStart() error {
 	if server.running {
-		return &serverIsAlreadyRunningError{}
+		return ErrServerIsRunning
 	}
 	server.initCmd()
 	server.attachStd()
@@ -159,15 +153,15 @@ func (server *Server) processOut() {
 			line = line[:len(line)-1]
 		}
 		if res := PlayerOutputReg.FindStringSubmatch(line); len(res) > 1 { // Player
-			player := res[1]
+			// player := res[1]
 			text := res[2]
-			log.Println(player + ": " + text)
+			// log.Println(player + ": " + text)
 			if text[:1] == bootstrap.Config.CommandPrefix {
 				server.cmdChan <- text[1:]
 			}
 		}
 		str := OutputFormatReg.ReplaceAllString(line, "["+server.name+"/$2]") // 格式化读入的字符串
-		server.ach.println(str)
+		ACH.println(str)
 		// server.ach.OutChan <- str // 嘿嘿！
 		// log.Print(str)
 	}

@@ -11,3 +11,8 @@ go install github.com/rakyll/statik
 ### 2. Build assets
 
 ### 3. run `build.bat`
+
+
+
+
+mFiBOtQd

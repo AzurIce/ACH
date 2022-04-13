@@ -33,7 +33,7 @@ func DefaultACHConfig() *ACHConfig {
 	}
 }
 
-func  ReadConfig() (*ACHConfig, error) {
+func ReadConfig() (*ACHConfig, error) {
 	config := &ACHConfig{}
 
 	log.Println("[config]: Reading config.yml...")
