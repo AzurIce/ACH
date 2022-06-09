@@ -30,17 +30,17 @@ func backup(server *Server, args []string) error {
 		if len(args) > 1 {
 			comment = comment + " " + strings.Join(args[1:], " ")
 		}
-		dst := path.Join(bootstrap.Config.BackupDir, fmt.Sprintf("%s - %s", server.name, comment))
+		dst := path.Join(bootstrap.Config.BackupDir, fmt.Sprintf("%s - %s", server.Name, comment))
 		src := path.Join(filepath.Dir(server.config.ExecPath), "world")
-		log.Printf("[%s/INFO]: Making backup to %s...\n", server.name, dst)
+		log.Printf("[%s/INFO]: Making backup to %s...\n", server.Name, dst)
 		server.Write(fmt.Sprintf("say Making backup to %s...", dst))
 		err := utils.CopyDir(src, dst)
 		if err != nil {
-			log.Printf("[%s/ERROR]: Backup making failed.\n", server.name)
+			log.Printf("[%s/ERROR]: Backup making failed.\n", server.Name)
 			server.Write("say Backup making failed.")
 			return err
 		}
-		log.Printf("[%s/INFO]: Backup making successed.\n", server.name)
+		log.Printf("[%s/INFO]: Backup making successed.\n", server.Name)
 		server.Write("say Backup making successed.")
 	} else if args[0] == "" || args[0] == "list" {
 		// log.Printf("[%s/INFO]: Listing backup.\n", server.ServerName)
@@ -69,7 +69,7 @@ func load(server *Server, i int) error {
 	backup(server, []string{"make", fmt.Sprintf("Before loading %s", res[i].Name())})
 
 	server.Write("stop")
-	for server.running {
+	for server.Running {
 		time.Sleep(time.Second)
 	}
 
@@ -77,13 +77,13 @@ func load(server *Server, i int) error {
 	serverSavePath := path.Join(filepath.Dir(server.config.ExecPath), "world")
 	os.RemoveAll(serverSavePath)
 
-	log.Printf("[%s/INFO]: Loading backup %s...\n", server.name, res[i].Name())
+	log.Printf("[%s/INFO]: Loading backup %s...\n", server.Name, res[i].Name())
 	err := utils.CopyDir(backupSavePath, serverSavePath)
 	if err != nil {
-		log.Printf("[%s/ERROR]: Backup loading failed.\n", server.name)
+		log.Printf("[%s/ERROR]: Backup loading failed.\n", server.Name)
 		return err
 	}
-	log.Printf("[%s/INFO]: Backup loading successed.\n", server.name)
+	log.Printf("[%s/INFO]: Backup loading successed.\n", server.Name)
 
 	server.start()
 	go server.wait()
@@ -92,7 +92,7 @@ func load(server *Server, i int) error {
 }
 
 func start(server *Server, args []string) error {
-	if server.running {
+	if server.Running {
 		return nil
 	} else {
 		go server.Run()
@@ -105,7 +105,7 @@ func start(server *Server, args []string) error {
 
 func restart(server *Server, args []string) error {
 	server.Write("stop")
-	for server.running {
+	for server.Running {
 		time.Sleep(time.Second)
 	}
 	go server.Run()

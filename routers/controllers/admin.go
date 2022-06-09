@@ -7,8 +7,8 @@ import (
 )
 
 func AdminAddUser(c *gin.Context) {
-	var service user.AddUserService
+	var service user.UserAddService
 	if err := c.BindJSON(&service); err == nil {
-		c.JSON(service.Register(c))
+		c.JSON(service.Add(c))
 	}
 }

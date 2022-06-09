@@ -9,13 +9,13 @@ import (
 	"gorm.io/gorm"
 )
 
-type LoginService struct {
+type UserLoginService struct {
 	Code     string `form:"code"`
 	Name     string `form:"name"`
 	Password string `form:"password"`
 }
 
-func (service *LoginService) Login(c *gin.Context) (int, string) {
+func (service *UserLoginService) Login(c *gin.Context) (int, string) {
 	var user models.User
 	var err error
 	// 提供了 Code，使用微软登录

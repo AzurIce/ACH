@@ -8,11 +8,11 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type AddUserService struct {
+type UserAddService struct {
 	Code string `form:"code"`
 }
 
-func (service *AddUserService) Register(c *gin.Context) (int, string) {
+func (service *UserAddService) Add(c *gin.Context) (int, string) {
 	println("添加用户 code: " + service.Code)
 	playerInfo, err := utils.GetPlayerInfoByCode(service.Code)
 	if err != nil {

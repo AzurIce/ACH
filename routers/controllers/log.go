@@ -19,19 +19,19 @@ func Log(c *gin.Context) {
 	ws, _ := upgrader.Upgrade(c.Writer, c.Request, nil)
 	ws.WriteMessage(
 		websocket.TextMessage,
-		[]byte(core.ACH.GetLog()),
+		[]byte(core.ACH.LogBuf.GetBuf()),
 	)
-	core.ACH.LogWsList = append(core.ACH.LogWsList, ws)
+	core.ACH.LogWsPool.AddWs(ws)
 	defer func() {
 		ws.Close()
 		ws = nil
 	}()
 	for {
-		_, str, err := ws.ReadMessage()
+		_, _, err := ws.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
 			break
 		}
-		core.ACH.ProcessInput(str)
+		// core.ACH.ProcessInput(str)
 	}
 }

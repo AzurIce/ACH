@@ -15,8 +15,8 @@ import (
 func UserLogin(c *gin.Context) {
 	// body, _ := ioutil.ReadAll(c.Request.Body)
 
-	var service user.LoginService
-	// log.Print("[UserLogin]", string(body))
+	var service user.UserLoginService
+	log.Println("[UserLogin]")
 	if err := c.BindJSON(&service); err == nil {
 		log.Println("[UserLogin] BindJSON Succesed")
 		c.JSON(service.Login(c))

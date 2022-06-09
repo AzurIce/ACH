@@ -4,30 +4,30 @@ import (
 	"ach/core"
 	"log"
 	"net/http"
-	"strings"
+
+	"ach/services/server"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool {
-		return true
-	},
-}
-
 func Console(c *gin.Context) {
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool {
+			return true
+		},
+	}
 	// log.Println("consoleHandler")
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		log.Print("upgrade:", err)
+		log.Print("[Console]: upgrade:", err)
 		return
 	}
 	ws.WriteMessage(
 		websocket.TextMessage,
-		[]byte(strings.Join(core.ACH.OutputBuffer[core.ACH.OutputCursor:], "")+strings.Join(core.ACH.OutputBuffer[:core.ACH.OutputCursor], "")),
+		[]byte(core.ACH.OutBuf.GetBuf()),
 	)
-	core.ACH.WsList = append(core.ACH.WsList, ws)
+	core.ACH.OutWsPool.AddWs(ws)
 	defer func() {
 		ws.Close()
 		ws = nil
@@ -35,9 +35,15 @@ func Console(c *gin.Context) {
 	for {
 		_, str, err := ws.ReadMessage()
 		if err != nil {
-			log.Println("read:", err)
+			log.Println("[Console]: read:", err)
 			break
 		}
-		core.ACH.ProcessInput(str)
+		core.ACH.InChan <- string(str)
+		// core.ACH.ProcessInput(str)
 	}
+}
+
+func GetServers(c *gin.Context) {
+	log.Println(server.GetServers())
+	c.JSON(http.StatusOK, server.GetServers())
 }

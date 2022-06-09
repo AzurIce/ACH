@@ -14,9 +14,9 @@ import (
 
 // Server ...
 type Server struct {
-	name                     string
+	Name                     string
 	config                   config.ServerConfig
-	running                  bool
+	Running                  bool
 	InChan, OutChan, ErrChan chan string
 	cmdChan                  chan string
 	stdin                    io.WriteCloser
@@ -27,9 +27,9 @@ type Server struct {
 // NewServer ...
 func NewServer(name string, config config.ServerConfig) *Server {
 	server := &Server{
-		name:    name,
+		Name:    name,
 		config:  config,
-		running: false,
+		Running: false,
 		InChan:  make(chan string, 8),
 		OutChan: make(chan string, 8),
 		ErrChan: make(chan string, 8),
@@ -37,8 +37,6 @@ func NewServer(name string, config config.ServerConfig) *Server {
 	}
 
 	go server.tick()
-	// go server.processIn()
-	// go server.handleCommand()
 
 	return server
 }
@@ -59,7 +57,7 @@ func (server *Server) tick() {
 		case line := <-server.InChan:
 			if line[:1] == bootstrap.Config.CommandPrefix {
 				server.cmdChan <- line[1:]
-			} else if server.running {
+			} else if server.Running {
 				server.stdin.Write([]byte(line + "\n"))
 			}
 		case line := <-server.OutChan:
@@ -77,8 +75,8 @@ func (server *Server) tick() {
 					server.cmdChan <- text[1:]
 				}
 			}
-			str := OutputFormatReg.ReplaceAllString(line, "["+server.name+"/$2]") // 格式化读入的字符串
-			ACH.Println(str)
+			str := OutputFormatReg.ReplaceAllString(line, utils.GetTime() + " ["+server.Name+"/$2]") // 格式化读入的字符串
+			ACH.Writeln(str)
 		case line := <-server.ErrChan:
 			log.Print(line)
 		}
@@ -93,19 +91,18 @@ var ErrServerIsRunning = errors.New("Server is already running")
 
 func (server *Server) Run() {
 	if err := server.start(); err != nil {
-		log.Printf("server<%s>: Error when starting:\n%s\n", server.name, err)
+		log.Printf("server<%s>: Error when starting:\n%s\n", server.Name, err)
 		return
 	}
 
 	if err := server.wait(); err != nil {
-		log.Printf("server<%s>: Error when waiting:\n%s\n", server.name, err)
+		log.Printf("server<%s>: Error when waiting:\n%s\n", server.Name, err)
 	}
 }
 
-
 // If successful started, return nil.
 func (server *Server) start() error {
-	if server.running {
+	if server.Running {
 		return ErrServerIsRunning
 	}
 	server.initCmd()
@@ -114,7 +111,7 @@ func (server *Server) start() error {
 	if err := server.cmd.Start(); err != nil {
 		return err
 	}
-	server.running = true
+	server.Running = true
 	go utils.ForwardStd(server.stdout, server.OutChan)
 	go utils.ForwardStd(server.stderr, server.ErrChan)
 	return nil
@@ -123,14 +120,12 @@ func (server *Server) start() error {
 // If successfuly ended, return nil.
 func (server *Server) wait() error {
 	if err := server.cmd.Wait(); err != nil {
-		server.running = false
+		server.Running = false
 		return err
 	}
-	server.running = false
+	server.Running = false
 	return nil
 }
-
-
 
 func (server *Server) initCmd() {
 	args := append(strings.Split(server.config.ExecOptions, " "), "-jar",
@@ -147,60 +142,3 @@ func (server *Server) attachStd() {
 	server.stdout, _ = server.cmd.StdoutPipe()
 	server.stderr, _ = server.cmd.StderrPipe()
 }
-
-// func (server *Server) handleCommand() {
-// 	for {
-// 		line := <-server.cmdChan
-// 		words := strings.Split(line, " ")
-// 		args := []string{""}
-// 		if len(words) > 1 {
-// 			args = words[1:]
-// 		}
-// 		var cmdFun, exist = Cmds[words[0]]
-// 		if exist {
-// 			cmdFun.(func(server *Server, args []string) error)(server, args)
-// 		}
-// 	}
-// }
-
-// func (server *Server) processIn() {
-// 	for {
-// 		line := <-server.InChan
-// 		if line[:1] == bootstrap.Config.CommandPrefix {
-// 			server.cmdChan <- line[1:]
-// 		} else if server.running {
-// 			server.stdin.Write([]byte(line + "\n"))
-// 		}
-// 	}
-// }
-
-// func (server *Server) processOut() {
-// 	// log.Println("[serve/processOut]: server.running:", server.running)
-// 	for server.running {
-// 		line := <-server.OutChan
-// 		log.Println("[serve/processOut]: line:", line)
-// 		// 去掉换行符
-// 		if i := strings.LastIndex(string(line), "\r"); i > 0 {
-// 			line = line[:i]
-// 		} else {
-// 			line = line[:len(line)-1]
-// 		}
-// 		if res := PlayerOutputReg.FindStringSubmatch(line); len(res) > 1 { // Player
-// 			// player := res[1]
-// 			text := res[2]
-// 			// log.Println(player + ": " + text)
-// 			if text[:1] == bootstrap.Config.CommandPrefix {
-// 				server.cmdChan <- text[1:]
-// 			}
-// 		}
-// 		str := OutputFormatReg.ReplaceAllString(line, "["+server.name+"/$2]") // 格式化读入的字符串
-// 		ACH.Println(str)
-// 		// log.Println(str)
-// 	}
-// }
-// func (server *Server) processErr() {
-// 	for server.running {
-// 		line := <-server.ErrChan
-// 		log.Print(line)
-// 	}
-// }
