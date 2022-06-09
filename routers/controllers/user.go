@@ -1,9 +1,9 @@
 package controllers
 
 import (
+	"ach/lib/utils"
 	"ach/models"
 	"ach/services/user"
-	"ach/utils"
 	"net/http"
 
 	// "io/ioutil"

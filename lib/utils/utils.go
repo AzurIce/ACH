@@ -64,24 +64,26 @@ func CopyDir(srcDir string, dstDir string) error {
 }
 
 func ForwardStd(f io.ReadCloser, c chan string) {
-	defer func() {
-		recover()
-	}()
+	// for {
+	// 	log.Print("1")
+	// }
+	// defer func() {
+	// 	recover()
+	// }()
 	cache := ""
 	buf := make([]byte, 1024)
 	for {
 		num, err := f.Read(buf)
-		if err != nil && err != io.EOF { //非EOF错误
+		if err != nil && err != io.EOF { // 非EOF错误
 			log.Panicln(err)
 		}
 		if num > 0 {
 			str := cache + string(buf[:num])
-			lines := strings.SplitAfter(str, "\n") // 按行分割开
+			lines := strings.SplitAfter(str, "\n") // 按行分割
 			for i := 0; i < len(lines)-1; i++ {
 				c <- lines[i]
-				// fmt.Println(lines[i])
 			}
-			cache = lines[len(lines)-1] //最后一行下次循环处理
+			cache = lines[len(lines)-1] // 最后一行下次循环处理
 		}
 	}
 }

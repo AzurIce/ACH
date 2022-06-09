@@ -9,6 +9,8 @@ import (
 func SendMessage(ws *websocket.Conn, str string) {
 	err := ws.WriteMessage(websocket.TextMessage, []byte(str))
 	if err != nil {
+		log.Println(str)
+		log.Println([]byte(str))
 		log.Println(err)
 		// Not established.
 	}

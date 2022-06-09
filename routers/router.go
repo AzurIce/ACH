@@ -11,27 +11,33 @@ import (
 
 func InitRouter() *gin.Engine {
 	r := gin.Default()
+
+	// TODO: Figure these things out
 	config := cors.DefaultConfig()
 	config.ExposeHeaders = []string{"Authorization"}
 	config.AllowCredentials = true
 	config.AllowAllOrigins = true
 	config.AllowHeaders = []string{"Origin", "Content-Length", "Content-Type", "Authorization"}
 	r.Use(cors.New(config))
+
+	// FrontendFS
 	r.Use(middlewares.Frontend(bootstrap.StaticFS))
 
-	api := r.Group("/api")
 
 	/*
 		路由
 	*/
+	api := r.Group("api")
 	{
+		// No login required
 		user := api.Group("user")
 		{
-			user.POST("login", controllers.UserLogin)
+			user.POST("login", controllers.UserLogin) // POST api/user/login
 			// TODO: user.POST("reset", controllers.UserReset)
-			user.GET("isAdmin", controllers.UserIsAdmin)
+			user.GET("isAdmin", controllers.UserIsAdmin) // GET api/user/isAdmin
 		}
 
+		 // Login required
 		auth := api.Group("")
 		auth.Use(middlewares.JWTAuth())
 		{
@@ -40,12 +46,12 @@ func InitRouter() *gin.Engine {
 			{
 				server := admin.Group("server")
 				{
-					server.GET("console", controllers.Console)
+					server.GET("console", controllers.Console) // GET api/admin/server
 				}
 
 				user := admin.Group("user")
 				{
-					user.POST("", controllers.AdminAddUser)
+					user.POST("", controllers.AdminAddUser) // POST api/admin/user
 					// TODO: user.POST("delete", controllers.UserRegister)
 				}
 			}

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"ach/utils"
+	"ach/lib/utils"
 	"log"
 	"strings"
 

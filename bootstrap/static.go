@@ -11,6 +11,7 @@ import (
 var StaticFS http.FileSystem
 
 func InitStaticFS() {
+	
 	var err error
 	StaticFS, err = fs.New()
 	if err != nil {

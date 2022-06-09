@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"ach/bootstrap"
-	"ach/utils"
+	"ach/lib/utils"
 )
 
 // Command ...
@@ -85,8 +85,8 @@ func load(server *Server, i int) error {
 	}
 	log.Printf("[%s/INFO]: Backup loading successed.\n", server.name)
 
-	server.Start()
-	go server.Wait()
+	server.start()
+	go server.wait()
 
 	return nil
 }
@@ -95,8 +95,9 @@ func start(server *Server, args []string) error {
 	if server.running {
 		return nil
 	} else {
-		server.Start()
-		go server.Wait()
+		go server.Run()
+		// server.Start()
+		// go server.Wait()
 	}
 
 	return nil
@@ -107,8 +108,9 @@ func restart(server *Server, args []string) error {
 	for server.running {
 		time.Sleep(time.Second)
 	}
-	server.Start()
-	go server.Wait()
+	go server.Run()
+	// server.Start()
+	// go server.Wait()
 	return nil
 }
 

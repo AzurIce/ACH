@@ -7,6 +7,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
+var CONFIG_FILE_PATH = "./config.yml"
+
 // ServerConfig ...
 type ServerConfig struct {
 	ExecOptions string `yaml:"execOptions"`
@@ -36,24 +38,24 @@ func DefaultACHConfig() *ACHConfig {
 func ReadConfig() (*ACHConfig, error) {
 	config := &ACHConfig{}
 
-	log.Println("[config]: Reading config.yml...")
-	configYaml, err := ioutil.ReadFile("./config.yml")
+	log.Println("[config/ReadConfig]: Reading " + CONFIG_FILE_PATH + "...")
+	configYaml, err := ioutil.ReadFile(CONFIG_FILE_PATH)
 	if err != nil { // 读取文件发生错误
 		return DefaultACHConfig(), err
 	}
-	// log.Print("[config]: content:", string(configYaml), '\n')
+	
 	// 可以读取config.yml，清空ach.config
-	log.Println("[config]: Parsing...")
+	log.Println("[config/ReadConfig]: Parsing...")
 	err = yaml.Unmarshal(configYaml, config)
-	// fmt.Println(ach.config)
 	if err != nil {
 		log.Println(err)
 	}
-	log.Print("[config]: config:", config, '\n')
+	log.Print("[config/ReadConfig]: config:", config, '\n')
 	return config, nil
 }
 
-func (config *ACHConfig) Save() {
+func SaveConfig(config *ACHConfig)  {
+	log.Println("[config/SaveConfig]: Saving config to " + CONFIG_FILE_PATH + "...")
 	data, _ := yaml.Marshal(config)
-	ioutil.WriteFile("./config.yml", data, 0666)
+	ioutil.WriteFile(CONFIG_FILE_PATH, data, 0666)
 }

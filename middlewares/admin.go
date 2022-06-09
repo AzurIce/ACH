@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"ach/models"
-	"ach/utils"
+	"ach/lib/utils"
 	"log"
 	"net/http"
 

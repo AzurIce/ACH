@@ -1,8 +1,8 @@
 package user
 
 import (
+	"ach/lib/utils"
 	"ach/models"
-	"ach/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

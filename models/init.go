@@ -1,7 +1,7 @@
 package models
 
 import (
-	"ach/utils"
+	"ach/lib/utils"
 	"log"
 
 	"gorm.io/driver/sqlite"
@@ -11,19 +11,13 @@ import (
 var DB *gorm.DB
 
 func Init() {
-	var (
-		db  *gorm.DB
-		err error
-	)
-
-	db, err = gorm.Open(sqlite.Open("ach.db"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("ach.db"), &gorm.Config{})
 
 	if err != nil {
 		log.Panicf("无法连接数据库，%s", err)
 	}
 
 	DB = db
-
 	DB.AutoMigrate(&User{})
 
 	// 创建初始管理员账户
@@ -50,5 +44,6 @@ func addDefaultUser() {
 		log.Println("初始管理员账户创建完成")
 		log.Printf("用户名: %s\n", "Admin")
 		log.Printf("密码: %s\n", password)
+		
 	}
 }

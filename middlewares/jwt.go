@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"ach/utils"
+	"ach/lib/utils"
 
 	"github.com/gin-gonic/gin"
 )
