@@ -8,7 +8,7 @@ import (
 
 func GetServers() string {
 	servers := models.GetServers()
-	log.Println(servers)
+	log.Println("[services/server/GetServers]: ", servers)
 	bytes, _ := json.Marshal(servers)
 	return string(bytes)
 }
