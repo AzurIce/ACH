@@ -31,7 +31,7 @@ func main() {
 	// var wg sync.WaitGroup
 	// wg.Add(1)
 
-	// core.ACH.StartAllServers()
+	core.ACH.StartAllServers()
 	// wg.Wait()
 
 	api.Run(":8888")
