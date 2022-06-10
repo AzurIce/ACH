@@ -23,7 +23,6 @@ func InitRouter() *gin.Engine {
 	// FrontendFS
 	r.Use(middlewares.Frontend(bootstrap.StaticFS))
 
-
 	/*
 		路由
 	*/

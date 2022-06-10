@@ -12,9 +12,17 @@ import (
 	// "log"
 )
 
+
+func init() {
+	bootstrap.InitStaticFS()
+	bootstrap.InitConfig()
+	os.Mkdir(bootstrap.Config.BackupDir, 0666)
+	models.Init()
+	core.Init()
+}
+
 func main() {
 	// ach := core.Ach()
-	core.Init()
 
 	api := routers.InitRouter()
 
@@ -23,7 +31,7 @@ func main() {
 	// var wg sync.WaitGroup
 	// wg.Add(1)
 
-	core.ACH.StartAllServers()
+	// core.ACH.StartAllServers()
 	// wg.Wait()
 
 	api.Run(":8888")
@@ -33,10 +41,3 @@ func main() {
 	// ach.TestRouter()
 }
 
-func init() {
-	bootstrap.InitStaticFS()
-	bootstrap.InitConfig()
-	os.Mkdir(bootstrap.Config.BackupDir, 0666)
-	models.Init()
-	core.Init()
-}
