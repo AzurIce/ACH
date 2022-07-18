@@ -33,7 +33,7 @@ func NewServer(name string, config config.ServerConfig) *Server {
 		InChan:  make(chan string, 8),
 		OutChan: make(chan string, 8),
 		ErrChan: make(chan string, 8),
-		cmdChan: make(chan string),
+		cmdChan: make(chan string, 8),
 	}
 
 	go server.tick()
@@ -58,10 +58,10 @@ func (server *Server) tick() {
 				cmdFun.(func(server *Server, args []string) error)(server, args)
 			}
 		case line := <-server.InChan:
-			/* if line[:1] == bootstrap.Config.CommandPrefix {
+			if line[:1] == bootstrap.Config.CommandPrefix {
 				// log.Println(line)
 				server.cmdChan <- line[1:]
-			} else */if server.Running {
+			} else if server.Running {
 				server.stdin.Write([]byte(line + "\n"))
 			}
 		case line := <-server.OutChan:
@@ -79,7 +79,7 @@ func (server *Server) tick() {
 					server.cmdChan <- text[1:]
 				}
 			}
-			str := OutputFormatReg.ReplaceAllString(line, utils.GetTime() + " ["+server.Name+"/$2]") // 格式化读入的字符串
+			str := OutputFormatReg.ReplaceAllString(line, utils.GetTime()+" ["+server.Name+"/$2]") // 格式化读入的字符串
 			ACH.Writeln(str)
 		case line := <-server.ErrChan:
 			log.Print(line)

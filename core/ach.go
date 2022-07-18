@@ -63,24 +63,24 @@ func (ach *ACHCore) tick() {
 			if res != nil { // 转发到特定服务器
 				server, exist := ach.Servers[string(res[1])]
 				if exist {
-					if string(res[2])[:1] == bootstrap.Config.CommandPrefix {
-						server.cmdChan<-string(res[2])[1:]
-					} else {
+					// if string(res[2])[:1] == bootstrap.Config.CommandPrefix {
+					// 	server.cmdChan<-string(res[2])[1:]
+					// } else {
 						server.InChan <- string(res[2])
-					}
+					// }
 				} else {
 					log.Printf("MCSH[stdinForward/ERROR]: Cannot find running server <%v>\n", string(res[1]))
 				}
 			} else { // 转发到所有服务器
-				if line[:1] == bootstrap.Config.CommandPrefix {
-					for _, server := range ach.Servers {
-						server.cmdChan <- string(line[1:])
-					}
-				} else {
+				// if line[:1] == bootstrap.Config.CommandPrefix {
+				// 	for _, server := range ach.Servers {
+				// 		server.cmdChan <- string(line[1:])
+				// 	}
+				// } else {
 					for _, server := range ach.Servers {
 						server.InChan <- string(line)
 					}
-				}
+				// }
 			}
 		case line := <-ach.OutChan:
 			fmt.Print("[ACHCore/tick]: OutChan: ", line)
