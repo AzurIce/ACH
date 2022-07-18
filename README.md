@@ -15,4 +15,4 @@ go install github.com/rakyll/statik
 
 
 
-mFiBOtQd
+viLdvCHl

@@ -42,9 +42,12 @@ func NewServer(name string, config config.ServerConfig) *Server {
 }
 
 func (server *Server) tick() {
+	// log.Println("ticking...")
 	for {
+		// log.Println("Selecting...")
 		select {
 		case line := <-server.cmdChan:
+			// log.Println(line)
 			words := strings.Split(line, " ")
 			args := []string{""}
 			if len(words) > 1 {
@@ -55,9 +58,10 @@ func (server *Server) tick() {
 				cmdFun.(func(server *Server, args []string) error)(server, args)
 			}
 		case line := <-server.InChan:
-			if line[:1] == bootstrap.Config.CommandPrefix {
+			/* if line[:1] == bootstrap.Config.CommandPrefix {
+				// log.Println(line)
 				server.cmdChan <- line[1:]
-			} else if server.Running {
+			} else */if server.Running {
 				server.stdin.Write([]byte(line + "\n"))
 			}
 		case line := <-server.OutChan:
