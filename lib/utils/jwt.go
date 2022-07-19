@@ -3,6 +3,8 @@ package utils
 import (
 	"log"
 	"strings"
+	"time"
+
 	// "time"
 
 	"github.com/gin-gonic/gin"
@@ -38,9 +40,22 @@ func GetTokenStr(c *gin.Context) string {
 	return tokenStr
 }
 
+// Override time value for tests.  Restore default value after.
+func at(t time.Time, f func()) {
+	jwt.TimeFunc = func() time.Time {
+		return t
+	}
+	f()
+	jwt.TimeFunc = time.Now
+}
+
 func DecodeTokenStr(tokenStr string) (*jwt.Token, error) {
-	token, err := jwt.ParseWithClaims(tokenStr, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-		return []byte("azurcraft"), nil
+	var token *jwt.Token
+	var err error
+	at(time.Unix(0, 0), func() {
+		token, err = jwt.ParseWithClaims(tokenStr, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
+			return []byte("azurcraft"), nil
+		})
 	})
 	if err != nil {
 		return token, err
