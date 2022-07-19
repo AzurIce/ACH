@@ -3,7 +3,7 @@ package utils
 import (
 	"log"
 	"strings"
-	"time"
+	// "time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt"
@@ -21,7 +21,7 @@ func CreateToken(uuid string) (string, error) {
 	t.Claims = &MyCustomClaims{
 		uuid,
 		jwt.StandardClaims{
-			ExpiresAt: time.Now().Add(time.Minute * 1).Unix(),
+			// ExpiresAt: time.Now().Add(time.Minute * 1).Unix(),
 		},
 	}
 

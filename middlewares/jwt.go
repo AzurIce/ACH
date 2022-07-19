@@ -16,7 +16,7 @@ func JWTAuth() gin.HandlerFunc {
 		// log.Println(token)
 
 		if err != nil || !token.Valid {
-			log.Println("[middlewares/JWTAuth]: Token not valid")
+			log.Println("[middlewares/JWTAuth]: Token not valid", err)
 			c.Abort()
 			return
 		}
