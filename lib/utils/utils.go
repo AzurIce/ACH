@@ -67,9 +67,9 @@ func ForwardStd(f io.ReadCloser, c chan string) {
 	// for {
 	// 	log.Print("1")
 	// }
-	// defer func() {
-	// 	recover()
-	// }()
+	defer func() {
+		recover()
+	}()
 	cache := ""
 	buf := make([]byte, 1024)
 	for {
