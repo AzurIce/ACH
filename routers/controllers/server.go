@@ -39,6 +39,7 @@ func Console(c *gin.Context) {
 		_, str, err := ws.ReadMessage()
 		if err != nil {
 			log.Println("[Console]: read:", err)
+			ws.Close()
 			break
 		}
 		core.ACH.InChan <- string(str)

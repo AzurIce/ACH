@@ -6,14 +6,16 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func SendMessage(ws *websocket.Conn, str string) {
+func SendMessage(ws *websocket.Conn, str string) error {
 	err := ws.WriteMessage(websocket.TextMessage, []byte(str))
 	if err != nil {
-		log.Println(str)
-		log.Println([]byte(str))
-		log.Println(err)
+		log.Println("ERR: ", str)
+		log.Println("ERR: ", []byte(str))
+		log.Println("ERR: ", err)
+		ws.Close()
 		// Not established.
 	}
+	return err
 }
 
 // WsPool
@@ -25,20 +27,23 @@ func NewWsPool() *WsPool{
 	return &WsPool{wsList: make([]*websocket.Conn, 0)}
 }
 
-func (wsPool *WsPool) AddWs(ws *websocket.Conn) {
-	for index, ws := range wsPool.wsList {
+func (wsPool *WsPool) AddWs(newWs *websocket.Conn) {
+	for i, ws := range wsPool.wsList {
 		if ws == nil {
-			wsPool.wsList[index] = ws
+			wsPool.wsList[i] = newWs
 			return
 		}
 	}
-	wsPool.wsList = append(wsPool.wsList, ws)
+	wsPool.wsList = append(wsPool.wsList, newWs)
 }
 
 func (wsPool *WsPool) AllSendMessage(line string) {
-	for _, ws := range wsPool.wsList {
+	// log.Println(wsPool.wsList)
+	for i, ws := range wsPool.wsList {
 		if ws != nil {
-			SendMessage(ws, line)
+			if err := SendMessage(ws, line); err != nil {
+				wsPool.wsList[i] = nil
+			}
 		}
 	}
 }
