@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"ach/bootstrap"
+	"ach/lib/utils"
 )
 
 // Command ...
@@ -20,7 +21,7 @@ type Command struct {
 // Cmds ...
 var Cmds = map[string]func(*Server, []string) error{
 	"backup":  backup,
-	"bksnap": bksnap,
+	"bksnap":  bksnap,
 	"start":   start,
 	"restart": restart,
 }
@@ -30,7 +31,7 @@ var Cmds = map[string]func(*Server, []string) error{
 func bksnap(server *Server, args []string) error {
 	if args[0] == "" || args[0] == "list" {
 		snapshotList := server.GetSnapshotList()
-		for i, snapshot := range(snapshotList) {
+		for i, snapshot := range snapshotList {
 			fmt.Printf("[%v] %s\n", i, snapshot)
 			server.Write(fmt.Sprintf("say [%v] %s", i, snapshot))
 		}
@@ -39,7 +40,7 @@ func bksnap(server *Server, args []string) error {
 		if len(args) > 1 {
 			comment = strings.Join(args[1:], " ")
 		}
-		if err :=server.MakeSnapshot(comment); err != nil {
+		if err := server.MakeSnapshot(comment); err != nil {
 			return err
 		}
 	} else if args[0] == "load" {
@@ -53,9 +54,9 @@ func bksnap(server *Server, args []string) error {
 
 func backup(server *Server, args []string) error {
 	if args[0] == "make" {
-		comment := ""
+		comment := utils.GetTimeStamp()
 		if len(args) > 1 {
-			comment = strings.Join(args[1:], " ")
+			comment += " " + strings.Join(args[1:], " ")
 		}
 		dst := path.Join(bootstrap.Config.BackupDir, "backups", fmt.Sprintf("%s - %s", server.Name, comment))
 		if err := server.MakeBackup(dst); err != nil {
@@ -76,11 +77,11 @@ func backup(server *Server, args []string) error {
 			server.LoadBackup(path.Join(bootstrap.Config.BackupDir, "backups", backupName))
 			// load(server, i)
 		}
-	}// else if args[0] == "del" {
-		// TODO: Backup del
-		// for i, index := range(args[1:]) {
+	} // else if args[0] == "del" {
+	// TODO: Backup del
+	// for i, index := range(args[1:]) {
 
-		// }
+	// }
 	//}
 	return nil
 }
