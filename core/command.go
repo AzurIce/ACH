@@ -2,17 +2,13 @@ package core
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
-	"os"
 	"path"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
 	"ach/bootstrap"
-	"ach/lib/utils"
 )
 
 // Command ...
@@ -22,37 +18,63 @@ type Command struct {
 }
 
 // Cmds ...
-var Cmds = make(map[string]interface{})
+var Cmds = map[string]func(*Server, []string) error{
+	"backup":  backup,
+	"bksnap": bksnap,
+	"start":   start,
+	"restart": restart,
+}
 
-func backup(server *Server, args []string) error {
-	if args[0] == "make" {
-		comment := utils.GetTimeStamp()
+// The length of the "args" argument is >= 1, if no args input, it will be [""]
+
+func bksnap(server *Server, args []string) error {
+	if args[0] == "" || args[0] == "list" {
+		snapshotList := server.GetSnapshotList()
+		for i, snapshot := range(snapshotList) {
+			fmt.Printf("[%v] %s\n", i, snapshot)
+			server.Write(fmt.Sprintf("say [%v] %s", i, snapshot))
+		}
+	} else if args[0] == "make" {
+		comment := ""
 		if len(args) > 1 {
-			comment = comment + " " + strings.Join(args[1:], " ")
+			comment = strings.Join(args[1:], " ")
 		}
-		dst := path.Join(bootstrap.Config.BackupDir, fmt.Sprintf("%s - %s", server.Name, comment))
-		src := path.Join(filepath.Dir(server.config.ExecPath), "world")
-		log.Printf("[%s/INFO]: Making backup to %s...\n", server.Name, dst)
-		server.Write(fmt.Sprintf("say Making backup to %s...", dst))
-		err := utils.CopyDir(src, dst)
-		if err != nil {
-			log.Printf("[%s/ERROR]: Backup making failed.\n", server.Name)
-			server.Write("say Backup making failed.")
+		if err :=server.MakeSnapshot(comment); err != nil {
 			return err
-		}
-		log.Printf("[%s/INFO]: Backup making successed.\n", server.Name)
-		server.Write("say Backup making successed.")
-	} else if args[0] == "" || args[0] == "list" {
-		// log.Printf("[%s/INFO]: Listing backup.\n", server.ServerName)
-		res, _ := ioutil.ReadDir(bootstrap.Config.BackupDir)
-		for i, f := range res {
-			fmt.Printf("[%v] %s\n", i, f.Name())
-			server.Write(fmt.Sprintf("say [%v] %s", i, f.Name()))
 		}
 	} else if args[0] == "load" {
 		i, err := strconv.Atoi(strings.Join(args[1:], ""))
 		if err == nil {
-			load(server, i)
+			server.LoadSnapshot(i)
+		}
+	}
+	return nil
+}
+
+func backup(server *Server, args []string) error {
+	if args[0] == "make" {
+		comment := ""
+		if len(args) > 1 {
+			comment = strings.Join(args[1:], " ")
+		}
+		dst := path.Join(bootstrap.Config.BackupDir, "backups", fmt.Sprintf("%s - %s", server.Name, comment))
+		if err := server.MakeBackup(dst); err != nil {
+			log.Println(err)
+			return err
+		}
+	} else if args[0] == "" || args[0] == "list" {
+		backupList := server.GetBackupList(path.Join(bootstrap.Config.BackupDir, "backups"))
+		// log.Printf("[%s/INFO]: Listing backup.\n", server.ServerName)
+		for i, backup := range backupList {
+			fmt.Printf("[%v] %s\n", i, backup)
+			server.Write(fmt.Sprintf("say [%v] %s", i, backup))
+		}
+	} else if args[0] == "load" {
+		i, err := strconv.Atoi(strings.Join(args[1:], ""))
+		if err == nil {
+			backupName := server.GetBackupList(path.Join(bootstrap.Config.BackupDir, "backups"))[i]
+			server.LoadBackup(path.Join(bootstrap.Config.BackupDir, "backups", backupName))
+			// load(server, i)
 		}
 	} else if args[0] == "del" {
 		// TODO: Backup del
@@ -63,41 +85,11 @@ func backup(server *Server, args []string) error {
 	return nil
 }
 
-func load(server *Server, i int) error {
-	// TODO: Err handle
-	res, _ := ioutil.ReadDir(bootstrap.Config.BackupDir)
-	backup(server, []string{"make", fmt.Sprintf("Before loading %s", res[i].Name())})
-
-	server.Write("stop")
-	for server.Running {
-		time.Sleep(time.Second)
-	}
-
-	backupSavePath := path.Join(bootstrap.Config.BackupDir, res[i].Name())
-	serverSavePath := path.Join(filepath.Dir(server.config.ExecPath), "world")
-	os.RemoveAll(serverSavePath)
-
-	log.Printf("[%s/INFO]: Loading backup %s...\n", server.Name, res[i].Name())
-	err := utils.CopyDir(backupSavePath, serverSavePath)
-	if err != nil {
-		log.Printf("[%s/ERROR]: Backup loading failed.\n", server.Name)
-		return err
-	}
-	log.Printf("[%s/INFO]: Backup loading successed.\n", server.Name)
-
-	server.start()
-	go server.wait()
-
-	return nil
-}
-
 func start(server *Server, args []string) error {
 	if server.Running {
 		return nil
 	} else {
 		go server.Run()
-		// server.Start()
-		// go server.Wait()
 	}
 
 	return nil
@@ -109,15 +101,5 @@ func restart(server *Server, args []string) error {
 		time.Sleep(time.Second)
 	}
 	go server.Run()
-	// server.Start()
-	// go server.Wait()
 	return nil
-}
-
-func init() {
-	log.Println("MCSH[init/INFO]: Initializing commands...")
-	Cmds["backup"] = backup
-	Cmds["start"] = start
-	Cmds["restart"] = restart
-	// Cmds["clone"] = clone
 }

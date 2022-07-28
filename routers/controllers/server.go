@@ -23,10 +23,13 @@ func Console(c *gin.Context) {
 		log.Print("[Console]: upgrade:", err)
 		return
 	}
-	ws.WriteMessage(
+	err = ws.WriteMessage(
 		websocket.TextMessage,
 		[]byte(core.ACH.OutBuf.GetBuf()),
 	)
+	if err != nil {
+		log.Println("[Console]: write:", err)
+	}
 	core.ACH.OutWsPool.AddWs(ws)
 	defer func() {
 		ws.Close()

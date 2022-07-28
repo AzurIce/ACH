@@ -5,7 +5,6 @@ import (
 	"ach/bootstrap"
 	"ach/core"
 	"ach/models"
-	"os"
 
 	// "sync"
 	"ach/routers"
@@ -16,7 +15,7 @@ import (
 func init() {
 	bootstrap.InitStaticFS()
 	bootstrap.InitConfig()
-	os.Mkdir(bootstrap.Config.BackupDir, 0666)
+	bootstrap.InitDirs()
 	models.Init()
 	core.Init()
 }
