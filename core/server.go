@@ -12,10 +12,17 @@ import (
 	"os/exec"
 	"path"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 	"time"
 )
+
+
+var PlayerOutputReg = regexp.MustCompile(`\]: <(.*?)> (.*)`)
+
+var OutputFormatReg = regexp.MustCompile(`(\[\d\d:\d\d:\d\d\]) *\[.+?\/(.+?)\]`)
+
 
 // Server ...
 type Server struct {
@@ -47,12 +54,9 @@ func NewServer(name string, config config.ServerConfig) *Server {
 }
 
 func (server *Server) tick() {
-	// log.Println("ticking...")
 	for {
-		// log.Println("Selecting...")
 		select {
 		case line := <-server.cmdChan:
-			// log.Println(line)
 			words := strings.Split(line, " ")
 			args := []string{""}
 			if len(words) > 1 {

@@ -76,12 +76,12 @@ func backup(server *Server, args []string) error {
 			server.LoadBackup(path.Join(bootstrap.Config.BackupDir, "backups", backupName))
 			// load(server, i)
 		}
-	} else if args[0] == "del" {
+	}// else if args[0] == "del" {
 		// TODO: Backup del
 		// for i, index := range(args[1:]) {
 
 		// }
-	}
+	//}
 	return nil
 }
 
