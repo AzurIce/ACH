@@ -18,11 +18,11 @@ type ACHCore struct {
 
 	LogChan   chan string
 	LogBuf    *utils.ScrollBuffer
-	OutWsPool *utils.WsPool
-
+	LogWsPool *utils.WsPool
+	
 	OutChan   chan string
 	OutBuf    *utils.ScrollBuffer
-	LogWsPool *utils.WsPool
+	OutWsPool *utils.WsPool
 
 	InChan chan string
 }

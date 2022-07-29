@@ -74,3 +74,17 @@ func GetUserByName(name string) (User, error) {
 	log.Printf("查找完成: <User>(Name = %s, PlayerUUID = %s, PlayerName = %s)", user.Name, user.PlayerUUID, user.PlayerName)
 	return user, nil
 }
+
+func GetUserList() ([]User, error) {
+	log.Println("正在获取所有 User...")
+	var userList = make([]User, 0)
+
+	res := DB.Select("player_uuid", "player_name", "name", "is_admin").Find(&userList)
+	if res.Error != nil {
+		log.Printf("获取失败: %s", res.Error)
+		return userList, res.Error
+	}
+	log.Printf("获取完成：共 %d 条数据", len(userList))
+
+	return userList, nil
+}

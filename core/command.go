@@ -32,8 +32,8 @@ func bksnap(server *Server, args []string) error {
 	if args[0] == "" || args[0] == "list" {
 		snapshotList := server.GetSnapshotList()
 		for i, snapshot := range snapshotList {
-			fmt.Printf("[%v] %s\n", i, snapshot)
-			server.Write(fmt.Sprintf("say [%v] %s", i, snapshot))
+			fmt.Printf("[%v] %s\n", i, snapshot.FileName)
+			server.Write(fmt.Sprintf("say [%v] %s", i, snapshot.FileName))
 		}
 	} else if args[0] == "make" {
 		comment := ""
@@ -67,13 +67,13 @@ func backup(server *Server, args []string) error {
 		backupList := server.GetBackupList(path.Join(bootstrap.Config.BackupDir, "backups"))
 		// log.Printf("[%s/INFO]: Listing backup.\n", server.ServerName)
 		for i, backup := range backupList {
-			fmt.Printf("[%v] %s\n", i, backup)
-			server.Write(fmt.Sprintf("say [%v] %s", i, backup))
+			fmt.Printf("[%v] %s\n", i, backup.FileName)
+			server.Write(fmt.Sprintf("say [%v] %s", i, backup.FileName))
 		}
 	} else if args[0] == "load" {
 		i, err := strconv.Atoi(strings.Join(args[1:], ""))
 		if err == nil {
-			backupName := server.GetBackupList(path.Join(bootstrap.Config.BackupDir, "backups"))[i]
+			backupName := server.GetBackupList(path.Join(bootstrap.Config.BackupDir, "backups"))[i].FileName
 			server.LoadBackup(path.Join(bootstrap.Config.BackupDir, "backups", backupName))
 			// load(server, i)
 		}

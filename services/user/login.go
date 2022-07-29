@@ -47,5 +47,5 @@ func (service *UserLoginService) Login(c *gin.Context) (int, string) {
 	} else {
 		jwtToken, _ = utils.CreateToken(user.PlayerUUID)
 	}
-	return http.StatusOK, `{"token": "` + jwtToken + `"}`
+	return http.StatusOK, `{"token": "` + jwtToken + `", "user_name": "` + user.Name + `"}`
 }

@@ -11,7 +11,6 @@ import (
 	// "log"
 )
 
-
 func init() {
 	bootstrap.InitStaticFS()
 	bootstrap.InitConfig()
@@ -39,4 +38,3 @@ func main() {
 	// ach.Run()
 	// ach.TestRouter()
 }
-

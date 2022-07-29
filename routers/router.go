@@ -55,7 +55,8 @@ func InitRouter() *gin.Engine {
 
 				user := admin.Group("user")
 				{
-					user.POST("", controllers.AdminAddUser) // POST api/admin/user
+					user.GET("", controllers.AdminGetUserList) // POST api/admin/user
+					user.POST("register", controllers.AdminAddUser)
 					// TODO: user.POST("delete", controllers.UserRegister)
 				}
 			}
