@@ -1,5 +1,3 @@
-(These are just for me)
-
 ## Build
 
 ### 1. Install statik
