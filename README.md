@@ -64,21 +64,22 @@ go install github.com/rakyll/statik
 以下内容已经过时，是旧版 MCSH 的内容
 
 - `command_prefix`
-    
+
     This is what MCSH will look for while you enter something into it.
-    
+
     If any input contains it at the beginning, it will be considered as a **MCSH Command**
-    
+
     check more in **MCSH Commands**
-    
+
 - `servers`
     It contains the information of all your server need to be managed with ACH.
-    For each server, the **key** should be a custom name for it. 
+    For each server, the **key** should be a custom name for it.
 
-    - `execOptions`
+  - `execOptions`
         e.g. `-Xms4G -Xmx4G`.
-    - `execPath`
+  - `execPath`
         The path to the `.jar` file of your server.
+        >
         > - When doing bacnup jobs, MCSH will use the dir of this path to locate `world/` folder.
         > - Server will be using command `java execOptions -jar execPath --nogui` to start.
 
@@ -89,6 +90,7 @@ go install github.com/rakyll/statik
     Otherwise, MCSHGo will write the input to every server.
 - output:
     It will present output from each server like this:
+
     ```
     YYYY-MM-DD HH:MM:SS [serverName/INFO]: ......
     YYYY-MM-DD HH:MM:SS [serverName/WARN]: ......
@@ -106,19 +108,19 @@ If you do `#xxx abc defgh ijk` \
 
 - `backup [mode] [arg]`
 
-	- enter ` `(empty) as `[mode]`
+  - enter ``(empty) as `[mode]`
 
-		> Show the backup list, Not developed yet.
+  > Show the backup list, Not developed yet.
 
-	- enter ` make` as `[mode]`
+  - enter `make` as `[mode]`
 
-		`arg` is `comment` , optional.\
+  `arg` is `comment` , optional.\
 
-		MCSH will copy your server's `serverRoot/world` to `Backups/` folder with a changed name in `servername - yyyy-mm-dd hh-mm-ss[ comment]` format
+  MCSH will copy your server's `serverRoot/world` to `Backups/` folder with a changed name in `servername - yyyy-mm-dd hh-mm-ss[ comment]` format
 
-	- enter  `restore` as `[mode]`
+  - enter  `restore` as `[mode]`
 
-		> stop the server, backup your server with comment `Restore2<backupName>` , Not developed yet.
+  > stop the server, backup your server with comment `Restore2<backupName>` , Not developed yet.
 
 - `run`
-    - After you stoped some server, you can use this command to run it again.
+  - After you stoped some server, you can use this command to run it again.
