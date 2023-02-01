@@ -1,7 +1,7 @@
 Backups/
 statik/
+.builds/
 *.db
 *.log
-.builds/
-go.sum
+/go.sum
 /config.yml
