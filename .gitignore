@@ -3,5 +3,5 @@ statik/
 .builds/
 *.db
 *.log
-/go.sum
+go.sum
 /config.yml
