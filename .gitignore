@@ -4,4 +4,4 @@ statik/
 *.log
 .builds/
 go.sum
-config.yml
+/config.yml
