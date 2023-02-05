@@ -13,7 +13,7 @@ import (
 	"strings"
 )
 
-var PlayerOutputReg = regexp.MustCompile(`\]: <(.*?)> (.*)`)
+var PlayerOutputReg = regexp.MustCompile(`\]: (\[.*?\] )?<(.*?)> (.*)`)
 
 var OutputFormatReg = regexp.MustCompile(`(\[\d\d:\d\d:\d\d\]) *\[.+?\/(.+?)\]`)
 
@@ -74,8 +74,8 @@ func (server *Server) tick() {
 				line = line[:len(line)-1]
 			}
 			if res := PlayerOutputReg.FindStringSubmatch(line); len(res) > 1 { // Player
-				// player := res[1]
-				text := res[2]
+				// player := res[2]
+				text := res[3]
 				// log.Println(player + ": " + text)
 				if text[:1] == bootstrap.Config.CommandPrefix {
 					server.cmdChan <- text[1:]
