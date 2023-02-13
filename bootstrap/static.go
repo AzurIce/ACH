@@ -11,7 +11,7 @@ import (
 
 var StaticFS http.FileSystem
 
-func InitStaticFS() {
+func init() {
 	log.Println("[bootStrap/InitStaticFS]: Initializing...")
 	var err error
 	StaticFS, err = fs.New()

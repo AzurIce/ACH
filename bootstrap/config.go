@@ -1,7 +1,7 @@
 package bootstrap
 
 import (
-	"ach/config"
+	"ach/pkg/config"
 	"log"
 	"os"
 	"path"
@@ -9,7 +9,7 @@ import (
 
 var Config *config.ACHConfig
 
-func InitConfig() {
+func init() {
 	var err error
 	log.Println("[bootstrap/InitConfig]: Initializing config...")
 	Config = config.DefaultACHConfig()
@@ -24,11 +24,7 @@ func InitConfig() {
 		os.Exit(1)
 	}
 	// log.Print("[bootstrap/InitConfig]: config: ", Config, '\n')
-}
-
-func InitDirs() {
 	os.Mkdir(Config.BackupDir, 0666)
 	os.Mkdir(path.Join(Config.BackupDir, "backups"), 0666)
 	os.Mkdir(path.Join(Config.BackupDir, "snapshots"), 0666)
-	// os.Mkdir(Config.BackupDir, 0666)
 }

@@ -1,8 +1,9 @@
 package user
 
 import (
-	"ach/lib/utils"
 	"ach/models"
+	"ach/pkg/jwt"
+	"ach/pkg/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -43,9 +44,9 @@ func (service *UserLoginService) Login(c *gin.Context) (int, string) {
 
 	var jwtToken string
 	if user.Name == "Admin" {
-		jwtToken, _ = utils.CreateToken("Admin")
+		jwtToken, _ = jwt.CreateToken("Admin")
 	} else {
-		jwtToken, _ = utils.CreateToken(user.PlayerUUID)
+		jwtToken, _ = jwt.CreateToken(user.PlayerUUID)
 	}
 	return http.StatusOK, `{"token": "` + jwtToken + `", "user_name": "` + user.Name + `"}`
 }

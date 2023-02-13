@@ -23,7 +23,7 @@ type WsPool struct {
 	wsList []*websocket.Conn
 }
 
-func NewWsPool() *WsPool{
+func NewWsPool() *WsPool {
 	return &WsPool{wsList: make([]*websocket.Conn, 0)}
 }
 

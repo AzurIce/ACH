@@ -8,7 +8,7 @@ import (
 
 func IsOp(opFilePath string, uuid string) bool {
 	data, err := ioutil.ReadFile(opFilePath)
-	if (err != nil) {
+	if err != nil {
 		log.Println("op.json读取失败")
 	}
 
@@ -18,7 +18,7 @@ func IsOp(opFilePath string, uuid string) bool {
 
 func IsInWhitelist(whitelistFilePath string, uuid string) bool {
 	data, err := ioutil.ReadFile(whitelistFilePath)
-	if (err != nil) {
+	if err != nil {
 		log.Println("whitelist.json读取失败")
 	}
 

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"ach/lib/utils"
+	"ach/pkg/utils"
 	"log"
 
 	"gorm.io/driver/sqlite"
@@ -10,7 +10,7 @@ import (
 
 var DB *gorm.DB
 
-func Init() {
+func init() {
 	db, err := gorm.Open(sqlite.Open("ach.db"), &gorm.Config{})
 
 	if err != nil {
@@ -44,6 +44,6 @@ func addDefaultUser() {
 		log.Println("初始管理员账户创建完成")
 		log.Printf("用户名: %s\n", "Admin")
 		log.Printf("密码: %s\n", password)
-		
+
 	}
 }

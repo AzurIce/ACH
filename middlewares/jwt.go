@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"ach/lib/utils"
+	"ach/pkg/jwt"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -9,10 +9,10 @@ import (
 
 func JWTAuth() gin.HandlerFunc {
 	return func(c *gin.Context) {
-		tokenStr := utils.GetTokenStr(c)
+		tokenStr := jwt.GetTokenStr(c)
 		log.Println("[middlewares/JWTAuth]: Token: ", tokenStr)
 
-		token, err := utils.DecodeTokenStr(tokenStr)
+		token, err := jwt.DecodeTokenStr(tokenStr)
 		// log.Println(token)
 
 		if err != nil || !token.Valid {

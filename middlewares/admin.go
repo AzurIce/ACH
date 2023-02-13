@@ -2,7 +2,7 @@ package middlewares
 
 import (
 	"ach/models"
-	"ach/lib/utils"
+	"ach/pkg/jwt"
 	"log"
 	"net/http"
 
@@ -13,7 +13,7 @@ func AdminCheck() gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		log.Println("[middleware/AdminCheck]")
-		claims := utils.MustGetClaims(c)
+		claims := jwt.MustGetClaims(c)
 		log.Println(claims)
 
 		if user, err := models.GetUserByUUID(claims.UUID); err == nil && user.IsAdmin {

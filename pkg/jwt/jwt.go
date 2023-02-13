@@ -1,6 +1,7 @@
-package utils
+package jwt
 
 import (
+	"ach/bootstrap"
 	"log"
 	"strings"
 	"time"
@@ -8,26 +9,21 @@ import (
 	// "time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 )
 
 type MyCustomClaims struct {
 	UUID string `json:"UUID"`
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 }
 
 func CreateToken(uuid string) (string, error) {
-
-	t := jwt.New(jwt.GetSigningMethod("HS256"))
-
-	t.Claims = &MyCustomClaims{
+	return jwt.NewWithClaims(jwt.GetSigningMethod("EdDSA"), MyCustomClaims{
 		uuid,
-		jwt.StandardClaims{
+		jwt.RegisteredClaims{
 			// ExpiresAt: time.Now().Add(time.Minute * 1).Unix(),
 		},
-	}
-
-	return t.SignedString([]byte("azurcraft"))
+	}).SignedString(bootstrap.Config.JWTSigningString)
 }
 
 func GetTokenStr(c *gin.Context) string {

@@ -6,7 +6,7 @@ import (
 	"regexp"
 
 	"ach/bootstrap"
-	"ach/lib/utils"
+	"ach/pkg/utils"
 	_ "ach/statik"
 )
 
@@ -19,7 +19,7 @@ type ACHCore struct {
 	LogChan   chan string
 	LogBuf    *utils.ScrollBuffer
 	LogWsPool *utils.WsPool
-	
+
 	OutChan   chan string
 	OutBuf    *utils.ScrollBuffer
 	OutWsPool *utils.WsPool
@@ -68,7 +68,7 @@ func (ach *ACHCore) tick() {
 				if exist {
 					server.InChan <- string(res[2])
 				} else {
-					log.Printf("MCSH[stdinForward/ERROR]: Cannot find running server <%v>\n", string(res[1]))
+					log.Printf("[ACHCore/tick]: Cannot find running server <%v>\n", string(res[1]))
 				}
 			} else { // 转发到所有服务器
 				for _, server := range ach.Servers {

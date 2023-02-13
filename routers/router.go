@@ -35,9 +35,8 @@ func InitRouter() *gin.Engine {
 			// TODO: user.POST("reset", controllers.UserReset)
 			user.GET("isAdmin", controllers.UserIsAdmin) // GET api/user/isAdmin
 		}
-		
 
-		 // Login required
+		// Login required
 		auth := api.Group("")
 		auth.Use(middlewares.JWTAuth())
 		{

@@ -1,8 +1,8 @@
 package controllers
 
 import (
-	"ach/lib/utils"
 	"ach/models"
+	"ach/pkg/jwt"
 	"ach/services/user"
 	"net/http"
 
@@ -24,7 +24,7 @@ func UserLogin(c *gin.Context) {
 }
 
 func UserIsAdmin(c *gin.Context) {
-	claims := utils.MustGetClaims(c)
+	claims := jwt.MustGetClaims(c)
 
 	log.Print("[UserIsAdmin] claims:", claims, '\n')
 	if user, err := models.GetUserByUUID(claims.UUID); err == nil {

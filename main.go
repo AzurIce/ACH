@@ -2,9 +2,9 @@ package main
 
 import (
 	// "ach/bootstrap"
-	"ach/bootstrap"
+	// "ach/bootstrap"
 	"ach/core"
-	"ach/models"
+	// "ach/models"
 
 	// "sync"
 	"ach/routers"
@@ -12,10 +12,10 @@ import (
 )
 
 func init() {
-	bootstrap.InitStaticFS()
-	bootstrap.InitConfig()
-	bootstrap.InitDirs()
-	models.Init()
+	// bootstrap.InitStaticFS()
+	// bootstrap.InitConfig()
+	// bootstrap.InitDirs()
+	// models.Init()
 	core.Init()
 }
 
@@ -29,7 +29,7 @@ func main() {
 	// var wg sync.WaitGroup
 	// wg.Add(1)
 
-	core.ACH.StartAllServers()
+	// core.ACH.StartAllServers()
 	// wg.Wait()
 
 	api.Run(":8888")

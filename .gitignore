@@ -3,4 +3,6 @@ statik/
 .builds/
 *.db
 *.log
+.vscode/
+.github/
 /config.yml
