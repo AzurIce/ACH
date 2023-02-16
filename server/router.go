@@ -32,6 +32,7 @@ func InitRouter() *gin.Engine {
 		user := api.Group("user")
 		{
 			user.POST("login", service.Handler(&service.UserLoginService{})) // POST api/user/login
+			user.GET("", service.Handler(&service.GetUserService{}))
 			// TODO: user.POST("", controllers.UserRegister) // POST api/user
 		}
 
@@ -55,7 +56,7 @@ func InitRouter() *gin.Engine {
 			{
 				user := admin.Group("user")
 				{
-					// TODO: user.GET("", services.Handler()) // GET  api/admin/user
+					user.GET("", service.Handler(&service.GetUsersService{})) // GET  api/admin/user
 					user.POST("", service.Handler(&service.UserUpdateService{})) // POST api/admin/user
 					// TODO: user.POST("delete", controllers.UserRegister)
 				}

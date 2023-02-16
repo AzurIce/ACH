@@ -77,3 +77,15 @@ func (service *UserUpdateService) Handle(c *gin.Context) (any, error) {
 		return nil, nil
 	}
 }
+
+type GetUserService struct {
+	UUID string `form:"uuid"`
+}
+
+func (service *GetUserService) Handle(c *gin.Context) (any, error) {
+	if user, err := models.GetUserByUUID(service.UUID); err != nil {
+		return user, nil
+	} else {
+		return nil, err
+	}
+}

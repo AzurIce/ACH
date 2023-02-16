@@ -3,6 +3,7 @@ package service
 import (
 	"ach/internal/serializer"
 	"io"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +15,7 @@ type Service interface {
 
 func Handler(s Service) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		err := c.BindJSON(s)
+		err := c.ShouldBindJSON(s)
 		if err != nil && err != io.EOF {
 			c.JSON(http.StatusBadRequest, serializer.ErrorResponse(err))
 			return
@@ -22,8 +23,10 @@ func Handler(s Service) gin.HandlerFunc {
 
 		res, err := s.Handle(c)
 		if err != nil {
+			log.Println(err.Error())
 			c.JSON(http.StatusBadRequest, serializer.ErrorResponse(err))
 		} else {
+			log.Println("StatusOK")
 			c.JSON(http.StatusOK, serializer.Response(res))
 		}
 	}

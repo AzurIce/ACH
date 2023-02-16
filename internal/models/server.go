@@ -4,7 +4,7 @@ import "ach/core"
 
 type Server struct {
 	Name    string `json:"name"`
-	Running bool `json:"running"`
+	Running bool   `json:"running"`
 }
 
 func GetServers() []Server {
