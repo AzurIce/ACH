@@ -31,7 +31,7 @@ func addDefaultUser() {
 	if err == gorm.ErrRecordNotFound {
 		defaultUser := &User{}
 
-		defaultUser.Name = "Admin"
+		defaultUser.Username = "Admin"
 		defaultUser.Password = utils.EncodePassword(password, utils.RandStringRunes(16))
 		defaultUser.PlayerUUID = "Admin"
 		defaultUser.PlayerName = "Admin"

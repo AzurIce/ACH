@@ -13,7 +13,7 @@ func JWTAuth() gin.HandlerFunc {
 		log.Println("[middlewares/JWTAuth]: Token: ", tokenStr)
 
 		token, err := jwt.DecodeTokenStr(tokenStr)
-		// log.Println(token)
+		log.Println(token, err)
 
 		if err != nil || !token.Valid {
 			log.Println("[middlewares/JWTAuth]: Token not valid", err)

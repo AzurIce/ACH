@@ -8,6 +8,11 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+func TestCreateToken(t *testing.T) {
+	token, err := CreateToken("Admin")
+	fmt.Println(token, err)
+}
+
 func TestJwtPlayground(t *testing.T) {
 	// jwt.New 使用指定签名方法创建 Payload（Claims）为空的 Token（签名方法置于 Header 部分）
 	// 创建得到的 Token 的 Valid 值为 false，此值只有在 Token 被 Parse/Verify 时才会更新

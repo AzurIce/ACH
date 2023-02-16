@@ -3,8 +3,8 @@ package models
 import "ach/core"
 
 type Server struct {
-	Name    string
-	Running bool
+	Name    string `json:"name"`
+	Running bool `json:"running"`
 }
 
 func GetServers() []Server {

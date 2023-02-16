@@ -4,17 +4,15 @@ import (
 	"ach/internal/utils"
 	"log"
 	"strings"
-
-	"gorm.io/gorm"
 )
 
 type User struct {
-	gorm.Model
-	PlayerUUID string // 玩家 UUID
-	PlayerName string // 玩家名(用户名)
-	Name       string // 用户名
-	Password   string // 密码
-	IsAdmin    bool   // 是否是管理员
+	ID         uint   `json:"id" gorm:"primaryKey"`
+	PlayerUUID string `json:"uuid" gorm:"unique"`     // 玩家 UUID
+	PlayerName string `json:"player_name"`            // 玩家名(用户名)
+	Username   string `json:"username" gorm:"unique"` // 用户名
+	Password   string `json:"-"`                      // 密码
+	IsAdmin    bool   `json:"is_admin"`               // 是否是管理员
 }
 
 func (user *User) CheckPassword(password string) bool {
@@ -31,7 +29,7 @@ func CreateUser(uuid string, name string) (uint, error) {
 
 	res := DB.Create(&user)
 	if res.Error == nil {
-		log.Printf("查找完成: <User>(Name = %s, PlayerUUID = %s, PlayerName = %s)", user.Name, user.PlayerUUID, user.PlayerName)
+		log.Printf("查找完成: <User>(Username = %s, PlayerUUID = %s, PlayerName = %s)", user.Username, user.PlayerUUID, user.PlayerName)
 	}
 	return user.ID, res.Error
 }
@@ -45,7 +43,7 @@ func GetUserByUUID(uuid string) (User, error) {
 		log.Printf("查找失败: %s", res.Error)
 		return user, res.Error
 	}
-	log.Printf("查找完成: <User>(Name = %s, PlayerUUID = %s, PlayerName = %s)", user.Name, user.PlayerUUID, user.PlayerName)
+	log.Printf("查找完成: <User>(Username = %s, PlayerUUID = %s, PlayerName = %s)", user.Username, user.PlayerUUID, user.PlayerName)
 	return user, nil
 }
 
@@ -58,20 +56,20 @@ func GetUserByID(id uint) (User, error) {
 		log.Printf("查找失败: %s", res.Error)
 		return user, res.Error
 	}
-	log.Printf("查找完成: <User>(Name = %s, PlayerUUID = %s, PlayerName = %s)", user.Name, user.PlayerUUID, user.PlayerName)
+	log.Printf("查找完成: <User>(Username = %s, PlayerUUID = %s, PlayerName = %s)", user.Username, user.PlayerUUID, user.PlayerName)
 	return user, nil
 }
 
-func GetUserByName(name string) (User, error) {
-	log.Printf("正在查找<User>(Name = %s)...", name)
+func GetUserByUsername(username string) (User, error) {
+	log.Printf("正在查找<User>(Username = %s)...", username)
 	var user User
 
-	res := DB.Where("name = ?", name).First(&user)
+	res := DB.Where("username = ?", username).First(&user)
 	if res.Error != nil {
 		log.Printf("查找失败: %s", res.Error)
 		return user, res.Error
 	}
-	log.Printf("查找完成: <User>(Name = %s, PlayerUUID = %s, PlayerName = %s)", user.Name, user.PlayerUUID, user.PlayerName)
+	log.Printf("查找完成: <User>(Username = %s, PlayerUUID = %s, PlayerName = %s)", user.Username, user.PlayerUUID, user.PlayerName)
 	return user, nil
 }
 
@@ -79,7 +77,7 @@ func GetUserList() ([]User, error) {
 	log.Println("正在获取所有 User...")
 	var userList = make([]User, 0)
 
-	res := DB.Select("player_uuid", "player_name", "name", "is_admin").Find(&userList)
+	res := DB.Select("player_uuid", "player_name", "username", "is_admin").Find(&userList)
 	if res.Error != nil {
 		log.Printf("获取失败: %s", res.Error)
 		return userList, res.Error

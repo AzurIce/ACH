@@ -46,8 +46,8 @@ func InitRouter() *gin.Engine {
 				// TODO: server.POST(":id/start", middlewares.AdminCheck(), controllers.StartServer) //POST api/server/:name/start
 				// TODO: server.POST(":id/stop", middlewares.AdminCheck(), controllers.StopServer) // POST api/server/:name/stop
 
-				auth.GET("console", middlewares.AdminCheck(), service.Handler(&service.GetServersService{})) // GET api/server/console
-				// TODO: auth.GET("log", middlewares.AdminCheck(), controllers.Log)         // GET api/server/log
+				server.GET("console", middlewares.AdminCheck(), service.Handler(&service.GetServersService{})) // GET api/server/console
+				// TODO: server.GET("log", middlewares.AdminCheck(), controllers.Log)         // GET api/server/log
 			}
 
 			admin := api.Group("admin")

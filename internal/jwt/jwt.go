@@ -18,12 +18,12 @@ type MyCustomClaims struct {
 }
 
 func CreateToken(uuid string) (string, error) {
-	return jwt.NewWithClaims(jwt.GetSigningMethod("EdDSA"), MyCustomClaims{
+	return jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), MyCustomClaims{
 		uuid,
 		jwt.RegisteredClaims{
 			// ExpiresAt: time.Now().Add(time.Minute * 1).Unix(),
 		},
-	}).SignedString(bootstrap.Config.JWTSigningString)
+	}).SignedString([]byte(bootstrap.Config.JWTSigningString))
 }
 
 func GetTokenStr(c *gin.Context) string {
@@ -48,9 +48,10 @@ func at(t time.Time, f func()) {
 func DecodeTokenStr(tokenStr string) (*jwt.Token, error) {
 	var token *jwt.Token
 	var err error
+	log.Println("Decoding", tokenStr)
 	at(time.Unix(0, 0), func() {
 		token, err = jwt.ParseWithClaims(tokenStr, &MyCustomClaims{}, func(token *jwt.Token) (interface{}, error) {
-			return []byte("azurcraft"), nil
+			return []byte(bootstrap.Config.JWTSigningString), nil
 		})
 	})
 	if err != nil {

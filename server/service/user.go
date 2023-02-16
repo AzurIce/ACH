@@ -24,34 +24,37 @@ func (service *UserLoginService) Handle(c *gin.Context) (any, error) {
 		// 获取游戏账号信息
 		playerInfo, err := utils.GetPlayerInfoByCode(service.Code)
 		if err != nil {
-			return nil, errors.New("Invalid code")
+			return nil, errors.New("invalid code")
 		}
 		// log.Println(playerInfo)
 
 		// 数据库中无此用户(未授权)
 		if user, err = models.GetUserByUUID(playerInfo.UUID); err == gorm.ErrRecordNotFound {
-			return nil, errors.New("Not Authenticated")
+			return nil, errors.New("not Authenticated")
 		}
 	} else {
-		if user, err = models.GetUserByName(service.Name); err == gorm.ErrRecordNotFound {
-			return nil, errors.New("Not exist")
+		if user, err = models.GetUserByUsername(service.Name); err == gorm.ErrRecordNotFound {
+			return nil, errors.New("not exist")
 		}
 
 		if !user.CheckPassword(service.Password) {
-			return nil, errors.New("Incorrect password")
+			return nil, errors.New("incorrect password")
 		}
 	}
 
 	var jwtToken string
-	if user.Name == "Admin" {
-		jwtToken, _ = jwt.CreateToken("Admin")
+	if user.Username == "Admin" {
+		jwtToken, err = jwt.CreateToken("Admin")
+		// fmt.Println(err)
 	} else {
-		jwtToken, _ = jwt.CreateToken(user.PlayerUUID)
+		jwtToken, err = jwt.CreateToken(user.PlayerUUID)
+		// fmt.Println(err)
 	}
 
 	res := make(map[string]any)
 	res["token"] = jwtToken
-	res["user_name"] = user.Name
+	res["user"] = user
+	// res["user_name"] = user.Username
 
 	return res, nil
 }
