@@ -12,7 +12,7 @@ import (
 
 type UserLoginService struct {
 	Code     string `form:"code"`
-	Name     string `form:"name"`
+	Username string `form:"username"`
 	Password string `form:"password"`
 }
 
@@ -33,7 +33,7 @@ func (service *UserLoginService) Handle(c *gin.Context) (any, error) {
 			return nil, errors.New("not Authenticated")
 		}
 	} else {
-		if user, err = models.GetUserByUsername(service.Name); err == gorm.ErrRecordNotFound {
+		if user, err = models.GetUserByUsername(service.Username); err == gorm.ErrRecordNotFound {
 			return nil, errors.New("not exist")
 		}
 
@@ -60,22 +60,24 @@ func (service *UserLoginService) Handle(c *gin.Context) (any, error) {
 }
 
 type UserUpdateService struct {
-	Code string `form:"code"`
+	Username string `form:"username"` // 用户名
+	Password string `form:"password"` // 密码
 }
 
 func (service *UserUpdateService) Handle(c *gin.Context) (any, error) {
-	playerInfo, err := utils.GetPlayerInfoByCode(service.Code)
-	if err != nil {
-		return nil, err
-	}
+	// playerInfo, err := utils.GetPlayerInfoByCode(service.Code)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	if _, err := models.GetUserByUUID(playerInfo.UUID); err != nil {
-		_, err := models.CreateUser(playerInfo.UUID, playerInfo.Name)
-		return nil, err
-	} else {
-		// TODO: 更新用户信息
-		return nil, nil
-	}
+	// if _, err := models.GetUserByUUID(playerInfo.UUID); err != nil {
+	// 	_, err := models.CreateUser(playerInfo.UUID, playerInfo.Name)
+	// 	return nil, err
+	// } else {
+	// 	// TODO: 更新用户信息
+	// 	return nil, nil
+	// }
+	return nil, nil
 }
 
 type GetUserService struct {

@@ -58,6 +58,7 @@ func InitRouter() *gin.Engine {
 				{
 					user.GET("", service.Handler(&service.GetUsersService{})) // GET  api/admin/user
 					user.POST("", service.Handler(&service.UserUpdateService{})) // POST api/admin/user
+					user.POST("register", service.Handler(&service.UserRegisterService{})) // POST api/admin/user/register
 					// TODO: user.POST("delete", controllers.UserRegister)
 				}
 			}

@@ -77,7 +77,7 @@ func GetUserList() ([]User, error) {
 	log.Println("正在获取所有 User...")
 	var userList = make([]User, 0)
 
-	res := DB.Select("player_uuid", "player_name", "username", "is_admin").Find(&userList)
+	res := DB.Find(&userList)
 	if res.Error != nil {
 		log.Printf("获取失败: %s", res.Error)
 		return userList, res.Error
