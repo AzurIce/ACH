@@ -5,8 +5,8 @@ import (
 	"log"
 	"regexp"
 
-	"ach/bootstrap"
-	"ach/pkg/utils"
+	"ach/internal/bootstrap"
+	"ach/internal/utils"
 	_ "ach/statik"
 )
 

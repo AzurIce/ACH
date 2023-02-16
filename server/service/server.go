@@ -1,17 +1,27 @@
-package controllers
+package service
 
 import (
 	"ach/core"
+	"ach/internal/models"
 	"log"
 	"net/http"
-
-	"ach/services/server"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 )
 
-func Console(c *gin.Context) {
+type GetServersService struct{}
+
+func (s *GetServersService) Handle(c *gin.Context) (any, error) {
+	servers := models.GetServers()
+	log.Println("[services/server/GetServers]: ", servers)
+	// bytes, _ := json.Marshal(servers)
+	return servers, nil
+}
+
+type ServerConsoleService struct{}
+
+func (s *ServerConsoleService) Handle(c *gin.Context) (any, error) {
 	upgrader := websocket.Upgrader{
 		CheckOrigin: func(r *http.Request) bool {
 			return true
@@ -21,7 +31,7 @@ func Console(c *gin.Context) {
 	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Print("[Console]: upgrade:", err)
-		return
+		return nil, err
 	}
 	err = ws.WriteMessage(
 		websocket.TextMessage,
@@ -29,6 +39,7 @@ func Console(c *gin.Context) {
 	)
 	if err != nil {
 		log.Println("[Console]: write:", err)
+		return nil, err
 	}
 	core.ACH.OutWsPool.AddWs(ws)
 	defer func() {
@@ -45,9 +56,5 @@ func Console(c *gin.Context) {
 		core.ACH.InChan <- string(str)
 		// core.ACH.ProcessInput(str)
 	}
-}
-
-func GetServers(c *gin.Context) {
-	log.Println(server.GetServers())
-	c.JSON(http.StatusOK, server.GetServers())
+	return nil, nil
 }

@@ -1,7 +1,7 @@
 package models
 
 import (
-	"ach/pkg/utils"
+	"ach/internal/utils"
 	"log"
 	"strings"
 
@@ -25,7 +25,7 @@ func (user *User) CheckPassword(password string) bool {
 	return user.Password == utils.EncodePassword(password, salt)
 }
 
-func CreateUser(uuid string, name string) uint {
+func CreateUser(uuid string, name string) (uint, error) {
 	log.Printf("正在创建<User>(PlayerUUID = %s, PlayerName = %s)...", uuid, name)
 	user := User{PlayerUUID: uuid, PlayerName: name}
 
@@ -33,7 +33,7 @@ func CreateUser(uuid string, name string) uint {
 	if res.Error == nil {
 		log.Printf("查找完成: <User>(Name = %s, PlayerUUID = %s, PlayerName = %s)", user.Name, user.PlayerUUID, user.PlayerName)
 	}
-	return user.ID
+	return user.ID, res.Error
 }
 
 func GetUserByUUID(uuid string) (User, error) {

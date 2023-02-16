@@ -1,7 +1,7 @@
 package jwt
 
 import (
-	"ach/bootstrap"
+	"ach/internal/bootstrap"
 	"log"
 	"strings"
 	"time"

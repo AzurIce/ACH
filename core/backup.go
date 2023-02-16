@@ -1,8 +1,8 @@
 package core
 
 import (
-	"ach/bootstrap"
-	"ach/pkg/utils"
+	"ach/internal/bootstrap"
+	"ach/internal/utils"
 	"fmt"
 	"io/ioutil"
 	"log"

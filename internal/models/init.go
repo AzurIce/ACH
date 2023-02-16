@@ -1,7 +1,7 @@
 package models
 
 import (
-	"ach/pkg/utils"
+	"ach/internal/utils"
 	"log"
 
 	"gorm.io/driver/sqlite"

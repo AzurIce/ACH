@@ -1,11 +1,11 @@
 package config
 
 import (
-	"ach/pkg/utils"
+	"ach/internal/utils"
 	"io/ioutil"
 	"log"
 
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 var CONFIG_FILE_PATH = "./config.yml"
@@ -57,7 +57,7 @@ func ReadConfig() (*ACHConfig, error) {
 	return config, nil
 }
 
-func SaveConfig(config *ACHConfig) {
+func Save(config *ACHConfig) {
 	log.Println("[config/SaveConfig]: Saving config to " + CONFIG_FILE_PATH + "...")
 	configStr, _ := yaml.Marshal(config)
 	ioutil.WriteFile(CONFIG_FILE_PATH, configStr, 0666)

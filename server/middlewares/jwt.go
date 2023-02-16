@@ -1,7 +1,7 @@
 package middlewares
 
 import (
-	"ach/pkg/jwt"
+	"ach/internal/jwt"
 	"log"
 
 	"github.com/gin-gonic/gin"

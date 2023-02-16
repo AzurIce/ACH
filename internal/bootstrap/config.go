@@ -1,7 +1,7 @@
 package bootstrap
 
 import (
-	"ach/pkg/config"
+	"ach/internal/config"
 	"log"
 	"os"
 	"path"
@@ -18,7 +18,7 @@ func init() {
 	if err != nil {
 		if os.IsNotExist(err) { // 文件不存在，创建并写入默认配置
 			println("[bootstrap/InitConfig]: Cannot find config.yml, creating default config...")
-			config.SaveConfig(Config)
+			config.Save(Config)
 			println("[bootstrap/InitConfig]: Successfuly created config.yml, please complete the config.")
 		}
 		os.Exit(1)

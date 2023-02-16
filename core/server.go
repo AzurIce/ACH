@@ -1,9 +1,9 @@
 package core
 
 import (
-	"ach/bootstrap"
-	"ach/pkg/config"
-	"ach/pkg/utils"
+	"ach/internal/bootstrap"
+	"ach/internal/config"
+	"ach/internal/utils"
 	"errors"
 	"io"
 	"log"

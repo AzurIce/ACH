@@ -7,7 +7,7 @@ import (
 	// "ach/models"
 
 	// "sync"
-	"ach/routers"
+	"ach/server"
 	// "log"
 )
 
@@ -22,7 +22,7 @@ func init() {
 func main() {
 	// ach := core.Ach()
 
-	api := routers.InitRouter()
+	api := server.InitRouter()
 
 	// log.Print("[main]: config: ", bootstrap.Config, '\n')
 
