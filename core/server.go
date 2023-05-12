@@ -13,9 +13,9 @@ import (
 	"strings"
 )
 
-var PlayerOutputReg = regexp.MustCompile(`\]: (\[.*?\] )?<(.*?)> (.*)`)
+var PlayerOutputReg = regexp.MustCompile(`]: (\[.*?] )?<(.*?)> (.*)`)
 
-var OutputFormatReg = regexp.MustCompile(`(\[\d\d:\d\d:\d\d\]) *\[.+?\/(.+?)\]`)
+var OutputFormatReg = regexp.MustCompile(`(\[\d\d:\d\d:\d\d]) *\[.+?/(.+?)]`)
 
 // Server ...
 type Server struct {
@@ -123,7 +123,7 @@ func (server *Server) start() error {
 	return nil
 }
 
-// If successfuly ended, return nil.
+// If successfully ended, return nil.
 func (server *Server) wait() error {
 	if err := server.cmd.Wait(); err != nil {
 		server.Running = false

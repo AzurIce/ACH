@@ -44,6 +44,5 @@ func addDefaultUser() {
 		log.Println("初始管理员账户创建完成")
 		log.Printf("用户名: %s\n", "Admin")
 		log.Printf("密码: %s\n", password)
-
 	}
 }

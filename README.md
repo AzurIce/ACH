@@ -1,15 +1,34 @@
-## Build
+# ACH
 
-### 1. Install statik
+基于对 minecraft 服务端输入输出进行重定向实现的服务器 Helper，可以完成多个服务器备份管理等功能，并带有后台页面。
 
-```bash
+> AzurCraftHelper
+
+## 构建
+
+首先，需要 Go 语言的环境。
+
+### 1. 安装 statik
+
+本项目使用 statik 将静态文件打包入可执行文件中
+
+```shell
 go get github.com/rakyll/statik
 go install github.com/rakyll/statik
 ```
 
-### 2. Build assets
+### 2. 构建前端
 
-### 3. run `build.bat`
+```shell
+git submodule update
+cd assets
+yarn
+yarn build
+```
+
+### 3. 修改并运行 `build.bat`
+
+
 
 ## 使用
 
