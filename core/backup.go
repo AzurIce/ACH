@@ -7,7 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"path"
-	"path/filepath"
+	// "path/filepath"
 	"sort"
 	"time"
 )
@@ -44,7 +44,7 @@ func (server *Server) GetBackupList(dst string) []Backup {
 }
 
 func (server *Server) MakeBackup(dst string) error {
-	src := path.Join(filepath.Dir(server.config.ExecPath), "world")
+	src := path.Join(server.config.Dir, "world")
 	log.Printf("[%s/INFO]: Making backup to %s...\n", server.Name, dst)
 	server.Write(fmt.Sprintf("say Making backup to %s...", dst))
 
@@ -63,7 +63,7 @@ func (server *Server) MakeBackup(dst string) error {
 }
 
 func (server *Server) LoadBackup(src string) error {
-	dst := path.Join(filepath.Dir(server.config.ExecPath), "world")
+	dst := path.Join(server.config.Dir, "world")
 	server.MakeSnapshot("Before loading backup")
 
 	server.Write("stop")

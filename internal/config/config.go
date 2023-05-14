@@ -2,8 +2,13 @@ package config
 
 import (
 	"ach/internal/utils"
+	// "fmt"
 	"io/ioutil"
 	"log"
+	// "net/http"
+	// "os"
+	// "os/exec"
+	// "path"
 
 	"gopkg.in/yaml.v3"
 )
@@ -11,9 +16,21 @@ import (
 var CONFIG_FILE_PATH = "./config.yml"
 
 // ServerConfig ...
+// If version is empty
+//   - If the server is not installed then
+//     install the latest version and update this
+//     field.
+//   - If the server is installed then
+//     update this field to the current version.
+// If version is not empty
+//   - Install the corresponding version no matter
+//     the server is already installed or not.
+
 type ServerConfig struct {
-	ExecOptions string `yaml:"execOptions"`
-	ExecPath    string `yaml:"execPath"`
+	Dir          string `yaml:"dir"`
+	// LauncherType string `yaml:"launcherType"`
+	JVMOptions   string `yaml:"jvm_options"`
+	Version      string `yaml:"version"`
 }
 
 // ACHConfig ...
@@ -30,9 +47,10 @@ func DefaultACHConfig() *ACHConfig {
 		BackupDir:        "./Backups",
 		JWTSigningString: utils.RandStr(6),
 		Servers: map[string]ServerConfig{
-			"serverName1": {
-				ExecOptions: "-Xms4G -Xmx4G",
-				ExecPath:    "path/to/your/server/s/exec/jar/file",
+			"serverName": {
+				Dir:          "path/to/your/server/s/folder",
+				// LauncherType: "quilt",
+				JVMOptions:   "-Xms4G -Xmx4G",
 			},
 		},
 	}
@@ -47,7 +65,7 @@ func ReadConfig() (*ACHConfig, error) {
 
 	config := &ACHConfig{}
 
-	// 可以读取config.yml，清空ach.config
+	// 可以读取config.yml，清空 config
 	log.Println("[config/ReadConfig]: Parsing...")
 	err = yaml.Unmarshal(configStr, config)
 	if err != nil {
