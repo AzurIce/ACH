@@ -61,6 +61,7 @@ func (server *Server) tick() {
 				cmdFun(server, args)
 			}
 		case line := <-server.InChan:
+			// log.Println(line)
 			if line[:1] == bootstrap.Config.CommandPrefix {
 				// log.Println(line)
 				server.cmdChan <- line[1:]
