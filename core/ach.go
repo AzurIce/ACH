@@ -76,13 +76,17 @@ func (ach *ACHCore) tick() {
 		case line := <-ach.OutChan:
 			fmt.Print("[ACHCore/tick]: OutChan: ", line)
 			for _, c := range ach.SSEChanList {
-				*c <- line
+				if c != nil {
+					*c <- line
+				}
 			}
 			// ach.OutWsPool.AllSendMessage(line)
 		case line := <-ach.LogChan:
 			log.Print("[ACHCore/tick]: LogChan: ", line)
 			for _, c := range ach.SSEChanList {
-				*c <- line
+				if c != nil {
+					*c <- line
+				}
 			}
 			// ach.LogWsPool.AllSendMessage(line)
 		}
