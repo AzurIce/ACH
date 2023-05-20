@@ -2,6 +2,8 @@ package models
 
 import (
 	"ach/internal/utils"
+	"errors"
+	"fmt"
 	"log"
 
 	"gorm.io/driver/sqlite"
@@ -21,28 +23,30 @@ func init() {
 	DB.AutoMigrate(&User{})
 
 	// 创建初始管理员账户
-	addDefaultUser()
+	_, err = GetUserByID(1)
+	if err == gorm.ErrRecordNotFound {
+        err := AddDefaultUser()
+        if err != nil {
+            log.Panicln(err)
+        }
+	}
 }
 
-func addDefaultUser() {
-	_, err := GetUserByID(1)
-	password := utils.RandStringRunes(8)
+func AddDefaultUser() error {
+    defaultUser := &User{}
 
-	if err == gorm.ErrRecordNotFound {
-		defaultUser := &User{}
+    defaultUser.Username = "Admin"
+    defaultUser.Password = utils.EncodePassword(utils.RandStringRunes(8), utils.RandStringRunes(16))
+    defaultUser.PlayerUUID = "Admin"
+    defaultUser.PlayerName = "Admin"
+    defaultUser.IsAdmin = true
 
-		defaultUser.Username = "Admin"
-		defaultUser.Password = utils.EncodePassword(password, utils.RandStringRunes(16))
-		defaultUser.PlayerUUID = "Admin"
-		defaultUser.PlayerName = "Admin"
-		defaultUser.IsAdmin = true
+    if err := DB.Create(&defaultUser).Error; err != nil {
+        return errors.New(fmt.Sprintf("创建初始管理员账户失败: %s\n", err))
+    }
 
-		if err := DB.Create(&defaultUser).Error; err != nil {
-			log.Panicf("创建初始管理员账户失败: %s\n", err)
-		}
-
-		log.Println("初始管理员账户创建完成")
-		log.Printf("用户名: %s\n", "Admin")
-		log.Printf("密码: %s\n", password)
-	}
+    log.Println("初始管理员账户创建完成")
+    log.Printf("用户名: %s\n", "Admin")
+    log.Printf("密码: %s\n", defaultUser.Password)
+    return nil
 }

@@ -1,14 +1,12 @@
-package bootstrap
+package server
 
 import (
-	"log"
+    "log"
 	"net/http"
-
-	_ "ach/statik"
-
 	"github.com/rakyll/statik/fs"
 )
 
+// StaticFS
 var StaticFS http.FileSystem
 
 func init() {

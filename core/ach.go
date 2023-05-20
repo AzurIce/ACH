@@ -5,9 +5,11 @@ import (
 	"log"
 	"regexp"
 
-	"ach/internal/bootstrap"
+	"ach/internal/config"
 	"ach/internal/utils"
 	_ "ach/statik"
+
+	"github.com/fsnotify/fsnotify"
 )
 
 var ForwardReg = regexp.MustCompile(`(.+?) *\| *(.+)`)
@@ -29,7 +31,7 @@ type ACHCore struct {
 
 var ACH *ACHCore
 
-func Init() {
+func init() {
 	ACH = &ACHCore{
 		Servers: make(map[string]*Server),
 		InChan:  make(chan string, 8),
@@ -41,11 +43,25 @@ func Init() {
 		LogBuf:    utils.NewScrollBuffer(),
 	}
 
-	for name, serverConfig := range bootstrap.Config.Servers {
-		ACH.Servers[name] = NewServer(name, serverConfig)
-	}
+    ACH.UpdateServers(*Config)
 
 	go ACH.tick()
+}
+
+func (ach *ACHCore) UpdateServers(config config.ACHConfig) {
+	for name, serverConfig := range config.Servers {
+        if server, ok := ach.Servers[name]; ok {
+		    ach.Servers[name].config = serverConfig
+            if server.Running {
+                if server.config.Dir != config.Servers[name].Dir ||
+                   server.config.Version != config.Servers[name].Version {
+                    restart(ach.Servers[name])
+                }
+            }
+        } else {
+		    ACH.Servers[name] = NewServer(name, serverConfig)
+        }
+	}
 }
 
 func (ach *ACHCore) StartAllServers() {
@@ -56,6 +72,44 @@ func (ach *ACHCore) StartAllServers() {
 }
 
 func (ach *ACHCore) tick() {
+    watcher, err := fsnotify.NewWatcher()
+    if err != nil {
+        log.Fatalln(err)
+    }
+    defer watcher.Close()
+
+    // Start listening for events.
+    go func() {
+        for {
+            select {
+            case event, ok := <-watcher.Events:
+                if !ok {
+                    return
+                }
+                // log.Println("event:", event)
+                if event.Has(fsnotify.Write) {
+                    log.Println("Detected config.yml changed: ", event.Name)
+                    Config, err = config.ReadConfig()
+                    if err != nil {
+                        log.Println("Failed to read config.yml: ", err)
+                    }
+                    ach.UpdateServers(*Config)
+                }
+            case err, ok := <-watcher.Errors:
+                if !ok {
+                    return
+                }
+                log.Println("error:", err)
+            }
+        }
+    }()
+
+    // Add a path.
+    err = watcher.Add("./config.yml")
+    if err != nil {
+        log.Fatal(err)
+    }
+
 	for {
 		select {
 		case line := <-ach.InChan:

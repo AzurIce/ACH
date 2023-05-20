@@ -1,12 +1,8 @@
 package server
 
 import (
-	"ach/internal/bootstrap"
 	"ach/server/middlewares"
 	"ach/server/service"
-
-	// "flag"
-	// "log"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -24,7 +20,7 @@ func InitRouter() *gin.Engine {
 	r.Use(cors.New(config))
 
 	// FrontendFS
-	r.Use(middlewares.Frontend(bootstrap.StaticFS))
+	r.Use(middlewares.Frontend(StaticFS))
 
 	/*
 		路由

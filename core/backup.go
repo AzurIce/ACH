@@ -1,7 +1,6 @@
 package core
 
 import (
-	"ach/internal/bootstrap"
 	"ach/internal/utils"
 	"fmt"
 	"io/ioutil"
@@ -88,21 +87,21 @@ func (server *Server) LoadBackup(src string) error {
 }
 
 func (server *Server) GetSnapshotCount() int {
-	res, _ := ioutil.ReadDir(path.Join(bootstrap.Config.BackupDir, "snapshots"))
+	res, _ := ioutil.ReadDir(path.Join(Config.BackupDir, "snapshots"))
 	return len(res)
 }
 
 func (server *Server) GetSnapshotList() []Backup {
-	return server.GetBackupList(path.Join(bootstrap.Config.BackupDir, "snapshots"))
+	return server.GetBackupList(path.Join(Config.BackupDir, "snapshots"))
 }
 
 func (server *Server) DeleteOldSnapshot() {
-	res, _ := ioutil.ReadDir(path.Join(bootstrap.Config.BackupDir, "snapshots"))
+	res, _ := ioutil.ReadDir(path.Join(Config.BackupDir, "snapshots"))
 	sort.Slice(res, func(i, j int) bool {
 		return res[i].ModTime().Unix() < res[j].ModTime().Unix()
 	})
 
-	utils.DeletePath(path.Join(bootstrap.Config.BackupDir, "snapshots", res[0].Name()))
+	utils.DeletePath(path.Join(Config.BackupDir, "snapshots", res[0].Name()))
 }
 
 func (server *Server) MakeSnapshot(comment string) error {
@@ -117,7 +116,7 @@ func (server *Server) MakeSnapshot(comment string) error {
 
 	if err := server.MakeBackup(
 		path.Join(
-			bootstrap.Config.BackupDir,
+			Config.BackupDir,
 			"snapshots",
 			fmt.Sprintf("%s - %s", server.Name, bkname),
 		),
@@ -129,7 +128,7 @@ func (server *Server) MakeSnapshot(comment string) error {
 
 func (server *Server) LoadSnapshot(index int) error {
 	snapshotName := server.GetSnapshotList()[index].FileName
-	snapshotPath := path.Join(bootstrap.Config.BackupDir, "snapshots", snapshotName)
+	snapshotPath := path.Join(Config.BackupDir, "snapshots", snapshotName)
 	if err := server.LoadBackup(snapshotPath); err != nil {
 		return err
 	}

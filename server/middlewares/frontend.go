@@ -1,7 +1,6 @@
 package middlewares
 
 import (
-	"ach/internal/bootstrap"
 	"net/http"
 	"strings"
 
@@ -11,10 +10,10 @@ import (
 func Frontend(fs http.FileSystem) gin.HandlerFunc {
 	fileServer := http.FileServer(fs)
 	return func(c *gin.Context) {
-		if bootstrap.Dev {
-			c.Next()
-            return
-		}
+		// if bootstrap.Dev {
+		// 	c.Next()
+        //     return
+		// }
 		path := c.Request.URL.Path
 
 		// API 跳过

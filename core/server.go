@@ -1,7 +1,6 @@
 package core
 
 import (
-	"ach/internal/bootstrap"
 	"ach/internal/config"
 	"ach/internal/utils"
 	"errors"
@@ -58,11 +57,11 @@ func (server *Server) tick() {
 			}
 			var cmdFun, exist = Cmds[words[0]]
 			if exist {
-				cmdFun(server, args)
+				cmdFun(server, args...)
 			}
 		case line := <-server.InChan:
 			// log.Println(line)
-			if line[:1] == bootstrap.Config.CommandPrefix {
+			if line[:1] == Config.CommandPrefix {
 				// log.Println(line)
 				server.cmdChan <- line[1:]
 			} else if server.Running {
@@ -79,7 +78,7 @@ func (server *Server) tick() {
 				// player := res[2]
 				text := res[3]
 				// log.Println(player + ": " + text)
-				if text[:1] == bootstrap.Config.CommandPrefix {
+				if text[:1] == Config.CommandPrefix {
 					server.cmdChan <- text[1:]
 				}
 			}

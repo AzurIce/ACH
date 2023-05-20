@@ -60,6 +60,19 @@ func GetUserByID(id uint) (User, error) {
 	return user, nil
 }
 
+func DeleteUserById(id uint) error {
+	log.Printf("正在删除<User>(ID = %d)...", id)
+
+    res := DB.Delete(&User{}, id)
+    if res.Error != nil {
+        log.Printf("删除失败: %s", res.Error)
+        return res.Error
+    }
+    
+    log.Printf("删除完成: <User>(id = %v)", id)
+    return nil
+}
+
 func GetUserByUsername(username string) (User, error) {
 	log.Printf("正在查找<User>(Username = %s)...", username)
 	var user User
