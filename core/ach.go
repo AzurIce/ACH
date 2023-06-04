@@ -18,11 +18,11 @@ type ACHCore struct {
 
 	LogChan   chan string
 	LogBuf    *utils.ScrollBuffer
-	LogWsPool *utils.WsPool
 
 	OutChan   chan string
 	OutBuf    *utils.ScrollBuffer
-	OutWsPool *utils.WsPool
+
+	SSEChanList []*chan string
 
 	InChan chan string
 }
@@ -36,11 +36,9 @@ func Init() {
 
 		OutChan:   make(chan string, 8),
 		OutBuf:    utils.NewScrollBuffer(),
-		OutWsPool: utils.NewWsPool(),
 
 		LogChan:   make(chan string, 8),
 		LogBuf:    utils.NewScrollBuffer(),
-		LogWsPool: utils.NewWsPool(),
 	}
 
 	for name, serverConfig := range bootstrap.Config.Servers {
@@ -77,12 +75,40 @@ func (ach *ACHCore) tick() {
 			}
 		case line := <-ach.OutChan:
 			fmt.Print("[ACHCore/tick]: OutChan: ", line)
-			ach.OutWsPool.AllSendMessage(line)
+			for _, c := range ach.SSEChanList {
+				if c != nil {
+					*c <- line
+				}
+			}
+			// ach.OutWsPool.AllSendMessage(line)
 		case line := <-ach.LogChan:
 			log.Print("[ACHCore/tick]: LogChan: ", line)
-			ach.LogWsPool.AllSendMessage(line)
+			for _, c := range ach.SSEChanList {
+				if c != nil {
+					*c <- line
+				}
+			}
+			// ach.LogWsPool.AllSendMessage(line)
 		}
 	}
+}
+
+func (ach *ACHCore) AddSSEChan(ch *chan string) {
+	for i, ws := range ach.SSEChanList {
+		if ws == nil {
+			ach.SSEChanList[i] = ch
+			return
+		}
+	}
+	ach.SSEChanList = append(ach.SSEChanList, ch)
+}
+
+func (ach *ACHCore) RemoveSSEChan(ch *chan string) {
+    for i, channel := range ach.SSEChanList {
+        if channel == ch {
+            ach.SSEChanList[i] = nil
+        }
+    }
 }
 
 // --- init ---

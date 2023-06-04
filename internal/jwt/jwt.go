@@ -28,7 +28,8 @@ func CreateToken(uuid string) (string, error) {
 
 func GetTokenStr(c *gin.Context) string {
 	tokenStr := ""
-	if c.Request.URL.Path == "/api/servers/console" {
+	log.Println(c.Request.Header.Get("Authorization"))
+	if c.Request.URL.Path == "/api/servers/console" && c.Request.Method == "GET" {
 		tokenStr = c.Query("token")
 	} else {
 		tokenStr = strings.ReplaceAll(c.Request.Header.Get("Authorization"), "Bearer ", "")

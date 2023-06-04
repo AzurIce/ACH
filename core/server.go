@@ -8,7 +8,8 @@ import (
 	"io"
 	"log"
 	"os/exec"
-	"path/filepath"
+	"path"
+	// "path/filepath"
 	"regexp"
 	"strings"
 )
@@ -60,6 +61,7 @@ func (server *Server) tick() {
 				cmdFun(server, args)
 			}
 		case line := <-server.InChan:
+			// log.Println(line)
 			if line[:1] == bootstrap.Config.CommandPrefix {
 				// log.Println(line)
 				server.cmdChan <- line[1:]
@@ -134,10 +136,18 @@ func (server *Server) wait() error {
 }
 
 func (server *Server) initCmd() {
-	args := append(strings.Split(server.config.ExecOptions, " "), "-jar",
-		server.config.ExecPath, "--nogui")
+	execFile := "quilt-server-launch.jar"
+	// if server.config.LauncherType == "vanilla" {
+	// 	execFile = "server.jar"
+	// } else if server.config.LauncherType == "fabric" {
+	// 	execFile = "fabric-server-launch.jar"
+	// } else if server.config.LauncherType == "quilt" {
+	// 	execFile = "quilt-server-launch.jar"
+	// }
+	args := append(strings.Split(server.config.JVMOptions, " "), "-jar",
+		path.Join(server.config.Dir,execFile) , "--nogui")
 	cmd := exec.Command("java", args...)
-	cmd.Dir = filepath.Dir(server.config.ExecPath)
+	cmd.Dir = server.config.Dir
 
 	server.cmd = cmd
 }

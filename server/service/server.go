@@ -4,10 +4,9 @@ import (
 	"ach/core"
 	"ach/internal/models"
 	"log"
-	"net/http"
+    "io"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/websocket"
 )
 
 type GetServersService struct{}
@@ -19,42 +18,40 @@ func (s *GetServersService) Handle(c *gin.Context) (any, error) {
 	return servers, nil
 }
 
-type ServerConsoleService struct{}
+func ServerConsoleHandler() gin.HandlerFunc {
+    return func (c *gin.Context) {
+        log.Println("ServerConsole")
+        c.Writer.Header().Set("Content-Type", "text/event-stream")
+        c.Writer.Header().Set("Cache-Control", "no-cache")
 
-func (s *ServerConsoleService) Handle(c *gin.Context) (any, error) {
-	upgrader := websocket.Upgrader{
-		CheckOrigin: func(r *http.Request) bool {
-			return true
-		},
-	}
-	// log.Println("consoleHandler")
-	ws, err := upgrader.Upgrade(c.Writer, c.Request, nil)
-	if err != nil {
-		log.Print("[Console]: upgrade:", err)
-		return nil, err
-	}
-	err = ws.WriteMessage(
-		websocket.TextMessage,
-		[]byte(core.ACH.OutBuf.GetBuf()),
-	)
-	if err != nil {
-		log.Println("[Console]: write:", err)
-		return nil, err
-	}
-	core.ACH.OutWsPool.AddWs(ws)
-	defer func() {
-		ws.Close()
-		ws = nil
-	}()
-	for {
-		_, str, err := ws.ReadMessage()
-		if err != nil {
-			log.Println("[Console]: read:", err)
-			ws.Close()
-			break
-		}
-		core.ACH.InChan <- string(str)
-		// core.ACH.ProcessInput(str)
-	}
+        messageChan := make(chan string)
+
+        flag := true
+        done := c.Stream(func(w io.Writer) bool {
+            if flag {
+                c.SSEvent("message", core.ACH.OutBuf.GetBuf())
+                core.ACH.AddSSEChan(&messageChan)
+                flag = false
+                return true
+            }
+            select {
+            case message := <- messageChan:
+                c.SSEvent("message", message)
+            }
+            return true
+        })
+
+        if done {
+            core.ACH.RemoveSSEChan(&messageChan)
+        }
+    }
+}
+
+type ServerConsolePostService struct{
+	Data string `form:"data"`
+}
+
+func (s *ServerConsolePostService) Handle(c *gin.Context) (any, error) {
+	core.ACH.InChan <- string(s.Data)
 	return nil, nil
 }
