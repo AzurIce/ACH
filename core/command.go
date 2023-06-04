@@ -12,23 +12,50 @@ import (
 	"ach/internal/utils"
 )
 
-// Command ...
-type Command struct {
-	Cmd  string
-	Args []string
+
+var Commands = map[string] interface{} {}
+
+func RegisterCommand(command string, f func() interface{}) {
+	
 }
 
+type Command interface {
+	Command() string
+}
+
+type ACHCommand interface {
+	Command
+	Execute(server *Server, args []string) error
+}
+type ServerCommand interface {
+	Command
+	Execute(args []string) error
+}
+
+// Command ...
+// type Command struct {
+// 	Cmd  string
+// 	Args []string
+// }
+
 // Cmds ...
-var Cmds = map[string]func(*Server, []string) error{
-	"backup":  backup,
-	"bksnap":  bksnap,
+var Cmds = map[string]interface{}{
+	"backup":  back,
+	"bksnap":  &bkSnapServerCommand{},
 	"start":   start,
 	"restart": restart,
 }
 
-// The length of the "args" argument is >= 1, if no args input, it will be [""]
+func init() {
+	Cmds[bkSnapServerCommand.Command()] = &bkSnapServerCommand{}
+}
 
-func bksnap(server *Server, args []string) error {
+// The length of the "args" argument is >= 1, if no args input, it will be [""]
+type bkSnapServerCommand struct{}
+func (c *bkSnapServerCommand) Command() string {
+	return "#bksnap"
+}
+func (c *bkSnapServerCommand) Execute(server *Server, args []string) error {
 	if args[0] == "" || args[0] == "list" {
 		snapshotList := server.GetSnapshotList()
 		for i, snapshot := range snapshotList {
@@ -52,7 +79,8 @@ func bksnap(server *Server, args []string) error {
 	return nil
 }
 
-func backup(server *Server, args []string) error {
+type backupServerCommand struct{}
+func (c *backupServerCommand)Execute(server *Server, args []string) error {
 	if args[0] == "make" {
 		comment := utils.GetTimeStamp()
 		if len(args) > 1 {
@@ -86,7 +114,8 @@ func backup(server *Server, args []string) error {
 	return nil
 }
 
-func start(server *Server, args []string) error {
+type startACHCommand struct{}
+func (c *startACHCommand)Execute(args []string) error {
 	if server.Running {
 		return nil
 	} else {
@@ -96,7 +125,18 @@ func start(server *Server, args []string) error {
 	return nil
 }
 
-func restart(server *Server, args []string) error {
+type restartACHCommand struct{}
+func (c *restartACHCommand)Execute(args []string) error {
+	server.Write("stop")
+	for server.Running {
+		time.Sleep(time.Second)
+	}
+	go server.Run()
+	return nil
+}
+
+type restartServerCommand struct{}
+func (c *restartServerCommand)Execute(server *Server, args []string) error {
 	server.Write("stop")
 	for server.Running {
 		time.Sleep(time.Second)

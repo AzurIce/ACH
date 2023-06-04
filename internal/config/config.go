@@ -2,8 +2,8 @@ package config
 
 import (
 	"ach/internal/utils"
+	"os"
 	// "fmt"
-	"io/ioutil"
 	"log"
 	// "net/http"
 	// "os"
@@ -23,8 +23,9 @@ var CONFIG_FILE_PATH = "./config.yml"
 //   - If the server is installed then
 //     update this field to the current version.
 // If version is not empty
-//   - Install the corresponding version no matter
-//     the server is already installed or not.
+//   - If the server is not installed with the corresponding version then
+//     install the corresponding version.
+//   - If the server is installed with the corresponding version then do nothing.
 
 type ServerConfig struct {
 	Dir          string `yaml:"dir"`
@@ -57,15 +58,15 @@ func DefaultACHConfig() *ACHConfig {
 }
 
 func ReadConfig() (*ACHConfig, error) {
+	config := DefaultACHConfig()
+
 	log.Println("[config/ReadConfig]: Reading " + CONFIG_FILE_PATH + "...")
-	configStr, err := ioutil.ReadFile(CONFIG_FILE_PATH)
-	if err != nil { // 读取文件发生错误
-		return DefaultACHConfig(), err
+	configStr, err := os.ReadFile(CONFIG_FILE_PATH)
+	if err != nil { // 读取文件发生错误，直接返回默认配置
+		return config, err
 	}
 
-	config := &ACHConfig{}
-
-	// 可以读取config.yml，清空 config
+	// 可以读取config.yml
 	log.Println("[config/ReadConfig]: Parsing...")
 	err = yaml.Unmarshal(configStr, config)
 	if err != nil {
@@ -78,5 +79,5 @@ func ReadConfig() (*ACHConfig, error) {
 func Save(config *ACHConfig) {
 	log.Println("[config/SaveConfig]: Saving config to " + CONFIG_FILE_PATH + "...")
 	configStr, _ := yaml.Marshal(config)
-	ioutil.WriteFile(CONFIG_FILE_PATH, configStr, 0666)
+	os.WriteFile(CONFIG_FILE_PATH, configStr, 0666)
 }

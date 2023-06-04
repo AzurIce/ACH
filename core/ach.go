@@ -41,9 +41,9 @@ func Init() {
 		LogBuf:    utils.NewScrollBuffer(),
 	}
 
-	for name, serverConfig := range bootstrap.Config.Servers {
-		ACH.Servers[name] = NewServer(name, serverConfig)
-	}
+	// for name, serverConfig := range bootstrap.Config.Servers {
+	// 	ACH.Servers[name] = NewServer(name, serverConfig)
+	// }
 
 	go ACH.tick()
 }
@@ -62,8 +62,7 @@ func (ach *ACHCore) tick() {
 			// 转发正则
 			res := ForwardReg.FindStringSubmatch(line)
 			if res != nil { // 转发到特定服务器
-				server, exist := ach.Servers[string(res[1])]
-				if exist {
+				if server, exist := ach.Servers[string(res[1])]; exist { // 对应服务器正在运行，则直接转发
 					server.InChan <- string(res[2])
 				} else {
 					log.Printf("[ACHCore/tick]: Cannot find running server <%v>\n", string(res[1]))
