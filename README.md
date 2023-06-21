@@ -17,6 +17,7 @@ go get github.com/rakyll/statik
 go install github.com/rakyll/statik
 ```
 
+
 ### 2. 构建前端
 
 ```shell
