@@ -27,9 +27,9 @@ command_prefix: '#'
 backup_dir: ./Backups
 servers:
     test:
-        dir: D:/MCServer # the folder to place executable jar
-        version: 1.19.4 # automatically install, if empty, then use the latest version, and update this field
-        # launcher: vanilla # or fabric/quilt, will automatic install(not implemented yet)
+        dir: D:/MCServer # The folder to place executable jar
+        version: 1.19.4 # Automatically install, if empty, then use the latest version, and update this field
+        # launcher: vanilla # Or fabric/quilt, will automatic install(not implemented yet)
         jvmOptions: -Xms4G -Xmx4G
 jwt_signing_string: dsqvre # Will automatic generate if empty
 ```
