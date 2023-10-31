@@ -1,0 +1,13 @@
+[package]
+name = "bish"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+derivative = "2.2.0"
+reqwest = { version = "0.11.22", features = ["blocking", "json"] }
+serde = { version = "1.0.190", features = ["derive"] }
+serde_json = "1.0.108"
+toml = "0.8.6"
