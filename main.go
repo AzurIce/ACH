@@ -2,11 +2,17 @@ package main
 
 import (
 	"ach/core"
+	"ach/internal/bootstrap"
 	"ach/server"
+	"embed"
 	"log"
 )
 
+//go:embed all:assets/dist/*
+var f embed.FS
+
 func init() {
+	bootstrap.InitStatic(f)
 	core.Init()
 }
 

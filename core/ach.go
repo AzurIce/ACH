@@ -7,7 +7,6 @@ import (
 
 	"ach/internal/bootstrap"
 	"ach/internal/utils"
-	_ "ach/statik"
 )
 
 var ForwardReg = regexp.MustCompile(`(.+?) *\| *(.+)`)
