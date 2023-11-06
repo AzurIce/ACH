@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fs, io, error::Error};
+use std::{collections::HashMap, error::Error, fs, io};
 
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};

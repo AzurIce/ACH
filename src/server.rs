@@ -1,13 +1,11 @@
 use std::{
-    fmt::format,
-    io::{self, BufRead, BufWriter, Stdout, Write},
-    process::{ChildStdin, ChildStdout, Command, Stdio},
+    io::{self, BufRead,Write},
+    process::{Command, Stdio},
     sync::mpsc,
     thread,
 };
 
 use derivative::Derivative;
-use regex::Regex;
 
 use crate::{config::ServerConfig, fabric::init_server_jar, utils::path::split_parent_and_file};
 
@@ -17,7 +15,6 @@ pub struct Server {
     #[derivative(Default(value = r#"Command::new("")"#))]
     command: Command,
     input_tx: Option<mpsc::Sender<String>>,
-    stdin: Option<BufWriter<ChildStdin>>,
 }
 
 impl Server {

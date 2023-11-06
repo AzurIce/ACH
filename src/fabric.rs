@@ -39,10 +39,13 @@ pub fn init_server_jar(folder: &str, version: &str) -> Result<String, Box<dyn Er
     let path = format!("{folder}{MAIN_SEPARATOR}fabric-server-mc.{version}-loader.{loader_version}-launcher.{installer_version}.jar");
     download(&url, &path)?;
     println!("[fabric/init_version]: Downloaded to {path}");
-    
+
     // 写入 eula=true 到 eula.txt
-    let mut eula_file = File::create(format!("{folder}{MAIN_SEPARATOR}eula.txt")).expect("failed to create eula file");
-    eula_file.write_all("eula=true".as_bytes()).expect("failed to write into eula file");
+    let mut eula_file = File::create(format!("{folder}{MAIN_SEPARATOR}eula.txt"))
+        .expect("failed to create eula file");
+    eula_file
+        .write_all("eula=true".as_bytes())
+        .expect("failed to write into eula file");
 
     Ok(path)
 }
@@ -69,22 +72,4 @@ fn download(url: &str, path: &str) -> Result<(), Box<dyn Error>> {
         println!("Downloaded!");
     }
     Ok(())
-}
-
-fn is_empty(path: &Path) -> bool {
-    match fs::read_dir(path) {
-        Ok(entries) => entries.count() == 0,
-        Err(_) => true,
-    }
-}
-
-fn clear_dir(path: &Path) {
-    if !is_empty(path) {
-        for entry in fs::read_dir(path).unwrap() {
-            let entry = entry.unwrap();
-            if entry.file_type().unwrap().is_file() {
-                fs::remove_file(entry.path()).unwrap();
-            }
-        }
-    }
 }

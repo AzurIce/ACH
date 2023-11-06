@@ -3,18 +3,22 @@ mod fabric;
 mod server;
 mod utils;
 
-use std::{error::Error, sync::{OnceLock, Mutex}, collections::HashMap, io::stdin, thread::sleep, time::Duration};
+use std::{
+    collections::HashMap,
+    error::Error,
+    io::stdin,
+    sync::{Mutex, OnceLock},
+};
 
-use regex::Regex;
 use server::Server;
+use utils::regex::forward_regex;
 
 pub fn servers() -> &'static Mutex<HashMap<String, Server>> {
     static SERVERS: OnceLock<Mutex<HashMap<String, Server>>> = OnceLock::new();
     SERVERS.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
-fn main() -> Result<(), Box<dyn Error>>{
-
+fn main() -> Result<(), Box<dyn Error>> {
     let config = config::load_config()?;
 
     let mut servers = servers().lock().unwrap();
@@ -23,11 +27,11 @@ fn main() -> Result<(), Box<dyn Error>>{
         servers.insert(server_name, server);
     }
 
-    for (server_name, server) in servers.iter_mut() {
+    for (_server_name, server) in servers.iter_mut() {
         server.run()
     }
 
-    let forward_regex = Regex::new(r"^(.+) *\| *(\S+?)\n").expect("regex err");
+    let forward_regex = forward_regex();
 
     // 主线程
     // 从终端接受输入，识别转发正则，转发到对应服务器的 input_tx

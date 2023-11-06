@@ -9,7 +9,34 @@ pub mod path {
     }
 }
 
+#[allow(unused)]
+pub mod fs {
+    use std::{fs, path::Path};
+
+    fn is_empty(path: &Path) -> bool {
+        match fs::read_dir(path) {
+            Ok(entries) => entries.count() == 0,
+            Err(_) => true,
+        }
+    }
+
+    fn clear_dir(path: &Path) {
+        if !is_empty(path) {
+            for entry in fs::read_dir(path).unwrap() {
+                let entry = entry.unwrap();
+                if entry.file_type().unwrap().is_file() {
+                    fs::remove_file(entry.path()).unwrap();
+                }
+            }
+        }
+    }
+}
+
 pub mod regex {
     use regex::Regex;
 
+    const FORWARD: &str = r"^(.+) *\| *(\S+?)\n";
+    pub fn forward_regex() -> Regex {
+        Regex::new(FORWARD).expect("regex err")
+    }
 }
