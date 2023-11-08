@@ -70,6 +70,7 @@ pub fn run(server: Arc<Mutex<Server>>) {
     thread::spawn(move || {
         let server = _server;
         while let Ok(command_str) = command_rx.recv() {
+            let command_str = command_str.replace("\r\n", "\n");
             let command_str = command_str.strip_prefix('#').unwrap();
             let command_str = command_str.strip_suffix('\n').unwrap_or(command_str);
 
@@ -91,7 +92,9 @@ pub fn run(server: Arc<Mutex<Server>>) {
                         while server.get_snapshot_list().len() >= 10 {
                             server.del_snapshot()
                         }
-                        server.make_snapshot()
+                        server.say("saving snapshot...");
+                        server.make_snapshot();
+                        server.say("saved snapshot")
                     } else if args.len() == 2 && args[0] == "load" {
                         // TODO: load snap backup
                     }
