@@ -22,7 +22,7 @@ mod test {
     }
 }
 
-#[derive(Serialize, Deserialize, Debug, Derivative)]
+#[derive(Serialize, Deserialize, Debug, Derivative, Clone)]
 #[derivative(Default)]
 pub struct BishConfig {
     #[derivative(Default(value = r##"String::from("#")"##))]
