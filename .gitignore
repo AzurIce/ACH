@@ -7,7 +7,3 @@ statik/
 .github/
 /config.yml
 quilt-installer*
-
-# Added by cargo
-
-/target
