@@ -1,7 +1,0 @@
-command_prefix = "#"
-backup_dir = "./backups"
-
-[servers."1.20.2"]
-dir = "/Users/azurice/Game/MCServer/1.20.2"
-jvm_options = ""
-version = "1.20.2"
