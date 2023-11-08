@@ -1,3 +1,11 @@
+pub mod time {
+    use chrono::Local;
+
+    pub fn get_cur_time_str() -> String {
+        Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
+    }
+}
+
 pub mod path {
     use std::path::Path;
 
@@ -11,7 +19,7 @@ pub mod path {
 
 #[allow(unused)]
 pub mod fs {
-    use std::{fs, path::Path};
+    use std::{fs, path::Path, io};
 
     fn is_empty(path: &Path) -> bool {
         match fs::read_dir(path) {
@@ -30,13 +38,67 @@ pub mod fs {
             }
         }
     }
+
+    pub fn copy_dir(src: &Path, dest: &Path) -> io::Result<()> {
+        if !src.is_dir() || !src.exists() {
+            return Err(io::Error::new(
+                io::ErrorKind::NotFound,
+                "Source directory does not exist.",
+            ));
+        }
+
+        if dest.exists() {
+            clear_dir(dest)
+        } else {
+            fs::create_dir_all(dest)?;
+        }
+    
+        let entries = fs::read_dir(src)?;
+    
+        for entry in entries {
+            let entry = entry?;
+
+            let entry_path = entry.path();
+            let dest_path = dest.join(entry.file_name());
+    
+            if entry_path.is_dir() {
+                copy_dir(&entry_path, &dest_path)?;
+            } else {
+                fs::copy(&entry_path, &dest_path)?;
+            }
+        }
+    
+        Ok(())
+    }
 }
 
 pub mod regex {
+    use std::sync::OnceLock;
+
     use regex::Regex;
 
     const FORWARD: &str = r"^(.+) *\| *(\S+?)\n";
-    pub fn forward_regex() -> Regex {
-        Regex::new(FORWARD).expect("regex err")
+    pub fn forward_regex() -> &'static Regex {
+        static FORWARD_REGEX: OnceLock<Regex> = OnceLock::new();
+        FORWARD_REGEX.get_or_init(|| Regex::new(FORWARD).expect("regex err"))
+    }
+
+    /*
+    [16:00:01] [Server thread/INFO]: _AzurIce_[/127.0.0.1:58952] logged in with entity id 112 at (-21.5, 72.0, -7.5)
+    [16:00:01] [Server thread/INFO]: _AzurIce_ joined the game
+    [16:00:04] [Server thread/INFO]: <_AzurIce_> asd
+    [16:00:06] [Server thread/INFO]: _AzurIce_ lost connection: Disconnected
+    [16:00:06] [Server thread/INFO]: _AzurIce_ left the game
+     */
+    const PLAYER: &str = r"]: <(.*?)> (.*)";
+    pub fn player_regex() -> &'static Regex {
+        static PLAYER_REGEX: OnceLock<Regex> = OnceLock::new();
+        PLAYER_REGEX.get_or_init(|| Regex::new(PLAYER).expect("regex err"))
+    }
+
+    const COMMAND: &str = r"";
+    pub fn command_regex() -> &'static Regex {
+        static COMMAND_REGEX: OnceLock<Regex> = OnceLock::new();
+        COMMAND_REGEX.get_or_init(|| Regex::new(COMMAND).expect("regex err"))
     }
 }

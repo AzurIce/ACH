@@ -32,7 +32,7 @@ pub struct BishConfig {
     pub servers: HashMap<String, ServerConfig>,
 }
 
-#[derive(Serialize, Deserialize, Default, Debug)]
+#[derive(Serialize, Deserialize, Default, Debug, Clone)]
 pub struct ServerConfig {
     pub dir: String,
     pub jvm_options: String,
