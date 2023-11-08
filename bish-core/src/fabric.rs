@@ -53,15 +53,15 @@ pub fn init_server_jar(folder: &str, version: &str) -> Result<String, Box<dyn Er
 fn download(url: &str, path: &str) -> Result<(), Box<dyn Error>> {
     let path = Path::new(&path);
     if !path.parent().unwrap().exists() {
-        fs::create_dir_all(&path).unwrap();
+        fs::create_dir_all(path).unwrap();
     }
     if path.exists() {
         println!("File already exist, skipping download...\n");
     } else {
         println!("Downloading to {:?} from {}\n", path, url);
-        let mut f = fs::File::create(&path)?;
+        let mut f = fs::File::create(path)?;
         let mut easy = Easy::new();
-        easy.url(&url).unwrap();
+        easy.url(url).unwrap();
         easy.follow_location(true).unwrap();
         easy.write_function(move |data| {
             f.write_all(data).unwrap();

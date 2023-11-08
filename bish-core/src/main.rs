@@ -4,16 +4,20 @@ mod fabric;
 mod server;
 mod utils;
 
-use core::{Core, server::run};
+use core::{server::run, Core};
 use std::{
+    error::Error,
+    io::stdin,
     sync::{
-        mpsc::{Sender, self},
+        mpsc::{self, Sender},
         Arc, OnceLock,
-    }, thread, io::stdin, error::Error,
+    },
+    thread,
 };
 
 use axum::{
-    routing::{get, post}, Router,
+    routing::{get, post},
+    Router,
 };
 use server::services::servers::{get_servers, start_server, stop_server};
 use utils::regex::forward_regex;
@@ -31,7 +35,6 @@ pub fn global_output_tx() -> Sender<String> {
 
 // #[tokio::main]
 async fn async_main(app_state: Arc<Core>) {
-
     let app = Router::new()
         .route("/servers", get(get_servers))
         .route("/servers/:name/start", post(start_server))
@@ -42,7 +45,6 @@ async fn async_main(app_state: Arc<Core>) {
         .serve(app.into_make_service())
         .await
         .unwrap();
-
 }
 
 fn main() -> Result<(), Box<dyn Error>> {

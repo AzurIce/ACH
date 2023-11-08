@@ -1,7 +1,6 @@
 mod backup;
 
 use std::{
-    clone,
     fmt::Display,
     io::{self, BufRead, Write},
     process::{Command, Stdio},
@@ -82,7 +81,7 @@ pub fn run(server: Arc<Mutex<Server>>) {
             println!("[server/{}]: command: {} {:?}", server.name, command, args);
             match command {
                 "bksnap" => {
-                    if args.len() == 0 || args[0] == "list" {
+                    if args.is_empty() || args[0] == "list" {
                         let snapshot_list = server.get_snapshot_list();
                         server.say("snapshots: ");
                         for (i, snapshot) in snapshot_list.into_iter().enumerate() {
@@ -98,12 +97,15 @@ pub fn run(server: Arc<Mutex<Server>>) {
                     }
                 }
                 "bkarch" => {
-                    if args.len() < 1 || args[0] == "list" {
+                    if args.is_empty() || args[0] == "list" {
+                        println!("bkarch list, not implemented yet")
                         // TODO: show arch backup
                     } else if args[0] == "make" {
+                        println!("bkarch make, not implemented yet")
                         // let comment = args[1..].join(" ");
                         // TODO: make arch backup
                     } else if args.len() == 2 && args[0] == "load" {
+                        println!("bkarch load, not implemented yet")
                         // TODO: load arch backup
                     }
                 }
@@ -149,7 +151,7 @@ pub fn run(server: Arc<Mutex<Server>>) {
                 writer.flush().expect("failed to flush");
             }
         }
-        println!("exit2")
+        // println!("exit2")
     });
 
     // 服务端 输出处理线程
@@ -159,7 +161,7 @@ pub fn run(server: Arc<Mutex<Server>>) {
     let _server = cloned_server.clone();
     thread::spawn(move || {
         let command_tx = _command_tx;
-        // let server = _server;
+        let server = _server;
 
         let mut reader = io::BufReader::new(child_out);
         let mut buf = String::new();
@@ -183,7 +185,12 @@ pub fn run(server: Arc<Mutex<Server>>) {
         }
         println!("server end");
         child.wait().expect("failed to wait");
-        println!("exit3");
+        // println!("exit3");
+
+        // Drop 掉 command_tx 和 input_tx 使得上面的两个线程可以退出循环
+        let mut server = server.lock().unwrap();
+        server.command_tx = None;
+        server.input_tx = None;
     });
 }
 
@@ -202,6 +209,7 @@ impl Server {
 
     pub fn new(name: String, config: ServerConfig) -> Self {
         Self {
+            name,
             config,
             ..Default::default()
         }
@@ -211,8 +219,6 @@ impl Server {
     // TODO: load snapshot
     // self.writeln("stop")
     // }
-
-    pub fn run(&mut self) {}
 
     pub fn writeln(&mut self, line: &str) {
         if let Some(tx) = &self.input_tx {

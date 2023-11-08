@@ -19,7 +19,7 @@ pub mod path {
 
 #[allow(unused)]
 pub mod fs {
-    use std::{fs, path::Path, io};
+    use std::{fs, io, path::Path};
 
     fn is_empty(path: &Path) -> bool {
         match fs::read_dir(path) {
@@ -52,22 +52,22 @@ pub mod fs {
         } else {
             fs::create_dir_all(dest)?;
         }
-    
+
         let entries = fs::read_dir(src)?;
-    
+
         for entry in entries {
             let entry = entry?;
 
             let entry_path = entry.path();
             let dest_path = dest.join(entry.file_name());
-    
+
             if entry_path.is_dir() {
                 copy_dir(&entry_path, &dest_path)?;
             } else {
                 fs::copy(&entry_path, &dest_path)?;
             }
         }
-    
+
         Ok(())
     }
 }
@@ -94,11 +94,5 @@ pub mod regex {
     pub fn player_regex() -> &'static Regex {
         static PLAYER_REGEX: OnceLock<Regex> = OnceLock::new();
         PLAYER_REGEX.get_or_init(|| Regex::new(PLAYER).expect("regex err"))
-    }
-
-    const COMMAND: &str = r"";
-    pub fn command_regex() -> &'static Regex {
-        static COMMAND_REGEX: OnceLock<Regex> = OnceLock::new();
-        COMMAND_REGEX.get_or_init(|| Regex::new(COMMAND).expect("regex err"))
     }
 }
