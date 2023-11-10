@@ -2,7 +2,7 @@ pub mod time {
     use chrono::Local;
 
     pub fn get_cur_time_str() -> String {
-        Local::now().format("%Y-%m-%d %H:%M:%S").to_string()
+        Local::now().format("%Y-%m-%d %H-%M-%S").to_string()
     }
 }
 
@@ -63,7 +63,7 @@ pub mod fs {
 
             if entry_path.is_dir() {
                 copy_dir(&entry_path, &dest_path)?;
-            } else {
+            } else if entry.file_name().to_str() != Some("session.lock"){
                 fs::copy(&entry_path, &dest_path)?;
             }
         }
