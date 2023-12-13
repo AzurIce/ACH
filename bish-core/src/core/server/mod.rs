@@ -2,13 +2,16 @@ mod backup;
 
 use std::{
     fmt::Display,
-    io::{self, BufRead, Write},
+    fs::File,
+    io::{self, BufRead, Read, Seek, Write},
+    path::PathBuf,
     process::{Command, Stdio},
     sync::{mpsc, Arc, Mutex},
     thread,
 };
 
 use derivative::Derivative;
+use regex::Regex;
 
 use crate::{
     config::ServerConfig,
@@ -42,6 +45,7 @@ mod test {
                 dir: "/Users/azurice/Game/MCServer/1.20.2".to_string(),
                 jvm_options: String::new(),
                 version: "1.20.2".to_string(),
+                ..Default::default()
             },
         );
 
@@ -50,6 +54,21 @@ mod test {
         println!("{:?}", server.get_snapshot_list());
         server.del_snapshot();
         println!("{:?}", server.get_snapshot_list());
+    }
+
+    #[test]
+    fn test_set_property() {
+        let server = Server::new(
+            "1.20.2".to_string(),
+            ServerConfig {
+                dir: "/Users/azurice/Game/MCServer/1.20.2".to_string(),
+                jvm_options: String::new(),
+                version: "1.20.2".to_string(),
+                ..Default::default()
+            },
+        );
+        server.set_property("difficulty", "hard");
+        server.set_property("server-ip", "0.0.0.0");
     }
 }
 
@@ -199,14 +218,23 @@ pub fn run(server: Arc<Mutex<Server>>) {
 
 impl Server {
     pub fn command(&self) -> Command {
-        let mut command = Command::new("java");
+        // init server.properties
+        for (key, value) in &self.config.properties {
+            self.set_property(key, value);
+        }
+        // init jar
         let (dir, filename) = split_parent_and_file(
             init_server_jar(&self.config.dir, &self.config.version)
                 .expect("failed to init server jar"),
         );
+
+        let mut command = Command::new("java");
+        let mut args = vec!["-jar", &filename, "--nogui"];
+        args.extend(self.config.jvm_options.split(' ').collect::<Vec<&str>>());
+
         println!("[Server/new]: command's dir and jar_file is {dir} and {filename}");
         command.current_dir(dir);
-        command.args(["-jar", &filename, "--nogui"]);
+        command.args(args);
         command
     }
 
@@ -216,6 +244,33 @@ impl Server {
             config,
             ..Default::default()
         }
+    }
+
+    pub fn set_property<S: AsRef<str>>(&self, key: S, value: S) {
+        let key = key.as_ref();
+        let value = value.as_ref();
+
+        let mut buf = String::new();
+        let property_file = PathBuf::from(&self.config.dir).join("server.properties");
+
+        {
+            let mut property_file =
+                File::open(&property_file).expect("failed to open server.properties");
+
+            property_file
+                .read_to_string(&mut buf)
+                .expect("failed to read properties");
+        }
+
+        let regex = Regex::new(format!(r"{}=([^#\n\r]+)", key).as_str()).unwrap();
+        let res = regex.replace(&buf, format!("{}={}", key, value));
+        // println!("{}", res);
+
+        let mut property_file =
+            File::create(&property_file).expect("failed to open server.properties");
+        property_file
+            .write_all(res.as_bytes())
+            .expect("failed to write server.properties");
     }
 
     // pub fn load_snapshot(&self, id: usize) {

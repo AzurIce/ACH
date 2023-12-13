@@ -37,6 +37,7 @@ pub struct ServerConfig {
     pub dir: String,
     pub jvm_options: String,
     pub version: String,
+    pub properties: HashMap<String, String>
 }
 
 pub fn load_config() -> Result<BishConfig, Box<dyn Error>> {
