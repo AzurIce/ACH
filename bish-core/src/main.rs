@@ -61,9 +61,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         }
     });
 
-    for (_server_name, server) in app_state.servers.iter() {
-        run(server.clone())
-    }
+    // for (_server_name, server) in app_state.servers.iter() {
+    //     run(server.clone())
+    // }
 
     // 主线程
     // 从终端接受输入，识别转发正则，转发到对应服务器的 input_tx
@@ -77,12 +77,12 @@ fn main() -> Result<(), Box<dyn Error>> {
             if let Some(cap) = forward_regex().captures(&buf) {
                 let line = cap.get(1).unwrap().as_str();
                 let server_name = cap.get(2).unwrap().as_str();
-                if let Some(server) = _app_state.servers.get(server_name) {
+                if let Some(server) = _app_state.running_servers.lock().unwrap().get(server_name) {
                     let mut server = server.lock().unwrap();
                     server.writeln(line)
                 }
             } else {
-                for (_server_name, server) in _app_state.servers.iter() {
+                for (_server_name, server) in _app_state.running_servers.lock().unwrap().iter() {
                     let mut server = server.lock().unwrap();
                     server.writeln(&buf)
                 }

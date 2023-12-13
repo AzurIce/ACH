@@ -1,42 +1,92 @@
-use std::sync::Arc;
+use std::{os::macos::raw::stat, sync::Arc};
 
 use axum::{
     extract::{Path, State},
     Json,
 };
 use reqwest::StatusCode;
+use serde::Serialize;
 use serde_json::json;
 
-use crate::core::Core;
+use crate::{
+    config::ServerConfig,
+    core::{
+        server::{self, run},
+        Core,
+    },
+};
+
+#[derive(Serialize)]
+struct ServerInfo {
+    pub name: String,
+    pub config: ServerConfig,
+    pub running: bool,
+}
 
 pub async fn get_servers(State(state): State<Arc<Core>>) -> (StatusCode, Json<serde_json::Value>) {
-    let server_list = state.servers.keys().cloned().collect::<Vec<String>>();
+    let mut servers = vec![];
+    let running_servers = state.running_servers.lock().unwrap();
+
+    for (name, config) in &state.config.servers {
+        servers.push(ServerInfo {
+            name: name.clone(),
+            config: config.clone(),
+            running: running_servers.get(name).is_some(),
+        })
+    }
 
     (
         StatusCode::OK,
         Json(json!({
-            "servers": server_list
+            "servers": servers
         })),
     )
 }
 
-pub async fn start_server(State(state): State<Arc<Core>>, Path(name): Path<String>) -> StatusCode {
-    if let Some(server) = state.servers.get(&name) {
-        let _server = server.lock().unwrap();
-        // TODO: Start server
-        StatusCode::OK
+pub async fn start_server(
+    State(state): State<Arc<Core>>,
+    Path(name): Path<String>,
+) -> (StatusCode, Json<serde_json::Value>) {
+    if state.running_servers.lock().unwrap().get(&name).is_none() {
+        tokio::task::block_in_place(|| {
+            state.run_server(name);
+        });
+        (
+            StatusCode::OK,
+            Json(json!({
+                "msg": "success"
+            })),
+        )
     } else {
-        StatusCode::BAD_REQUEST
+        (
+            StatusCode::BAD_REQUEST,
+            Json(json!({
+                "msg": "The server is already running"
+            })),
+        )
     }
 }
 
-pub async fn stop_server(State(state): State<Arc<Core>>, Path(name): Path<String>) -> StatusCode {
-    if let Some(server) = state.servers.get(&name) {
-        let mut server = server.lock().unwrap();
-        server.writeln("stop");
-        // TODO: Stop server
-        StatusCode::OK
+pub async fn stop_server(
+    State(state): State<Arc<Core>>,
+    Path(name): Path<String>,
+) -> (StatusCode, Json<serde_json::Value>) {
+    if state.running_servers.lock().unwrap().get(&name).is_some() {
+        state.stop_server(name);
+        // let mut server = server.lock().unwrap();
+        // server.writeln("stop");
+        (
+            StatusCode::OK,
+            Json(json!({
+                "msg": "success"
+            })),
+        )
     } else {
-        StatusCode::BAD_REQUEST
+        (
+            StatusCode::BAD_REQUEST,
+            Json(json!({
+                "msg": "The server is not running"
+            })),
+        )
     }
 }
