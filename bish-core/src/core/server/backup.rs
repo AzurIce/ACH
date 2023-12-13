@@ -50,6 +50,7 @@ impl Server {
 
         let backup_name = get_cur_time_str();
         let dst_path = Path::new("./backups").join("snapshots").join(backup_name);
+        println!("copying from {src_path:?} to {dst_path:?}...");
         if let Err(err) = copy_dir(&src_path, &dst_path) {
             println!("failed to copy: {err}")
         }
