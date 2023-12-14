@@ -1,4 +1,4 @@
-use std::{os::macos::raw::stat, sync::Arc};
+use std::sync::Arc;
 
 use axum::{
     extract::{Path, State},
@@ -8,13 +8,7 @@ use reqwest::StatusCode;
 use serde::Serialize;
 use serde_json::json;
 
-use crate::{
-    config::ServerConfig,
-    core::{
-        server::{self, run},
-        Core,
-    },
-};
+use crate::{config::ServerConfig, core::Core};
 
 #[derive(Serialize)]
 struct ServerInfo {

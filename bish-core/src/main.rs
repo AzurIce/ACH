@@ -4,7 +4,7 @@ mod fabric;
 mod server;
 mod utils;
 
-use core::{server::run, Core};
+use core::Core;
 use std::{
     error::Error,
     io::stdin,
@@ -60,10 +60,6 @@ fn main() -> Result<(), Box<dyn Error>> {
             println!("{buf}")
         }
     });
-
-    // for (_server_name, server) in app_state.servers.iter() {
-    //     run(server.clone())
-    // }
 
     // 主线程
     // 从终端接受输入，识别转发正则，转发到对应服务器的 input_tx

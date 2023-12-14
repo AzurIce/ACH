@@ -63,7 +63,7 @@ pub mod fs {
 
             if entry_path.is_dir() {
                 copy_dir(&entry_path, &dest_path)?;
-            } else if entry.file_name().to_str() != Some("session.lock"){
+            } else if entry.file_name().to_str() != Some("session.lock") {
                 fs::copy(&entry_path, &dest_path)?;
             }
         }

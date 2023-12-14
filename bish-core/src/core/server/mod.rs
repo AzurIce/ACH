@@ -3,7 +3,7 @@ mod backup;
 use std::{
     fmt::Display,
     fs::File,
-    io::{self, BufRead, Read, Seek, Write},
+    io::{self, BufRead, Read, Write},
     path::PathBuf,
     process::{Command, Stdio},
     sync::{mpsc, Arc, Mutex},
