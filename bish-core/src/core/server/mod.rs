@@ -136,8 +136,8 @@ pub fn run(server: Arc<Mutex<Server>>, global_output_tx: Sender<String>) -> Resu
     let _server = cloned_server.clone();
     thread::spawn(move || {
         let mut reader = io::BufReader::new(child_out);
-        let mut buf = String::new();
         loop {
+            let mut buf = String::new();
             match reader.read_line(&mut buf) {
                 Err(err) => {
                     // TODO: 为何初次运行会有一段是 stream did not contain valid UTF-8？

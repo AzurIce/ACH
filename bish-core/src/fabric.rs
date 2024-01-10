@@ -3,7 +3,7 @@ use std::{
     error::Error,
     fs::{self, File},
     io::Write,
-    path::{Path, MAIN_SEPARATOR}, process::Command,
+    path::{Path, MAIN_SEPARATOR},
 };
 
 use curl::easy::Easy;
