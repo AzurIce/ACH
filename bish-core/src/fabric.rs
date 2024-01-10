@@ -3,10 +3,11 @@ use std::{
     error::Error,
     fs::{self, File},
     io::Write,
-    path::{Path, MAIN_SEPARATOR},
+    path::{Path, MAIN_SEPARATOR}, process::Command,
 };
 
 use curl::easy::Easy;
+use log::info;
 
 #[cfg(test)]
 mod test {
@@ -35,10 +36,10 @@ pub fn init_server_jar(folder: &str, version: &str) -> Result<String, Box<dyn Er
     let url = format!("https://meta.fabricmc.net/v2/versions/loader/{version}/{loader_version}/{installer_version}/server/jar");
 
     // 下载服务端 jar
-    println!("[fabric/init_version]: downloading server_jar to {folder}...");
+    info!("[fabric/init_version]: downloading server_jar to {folder}...");
     let path = format!("{folder}{MAIN_SEPARATOR}fabric-server-mc.{version}-loader.{loader_version}-launcher.{installer_version}.jar");
     download(&url, &path)?;
-    println!("[fabric/init_version]: Downloaded to {path}");
+    info!("[fabric/init_version]: Downloaded to {path}");
 
     // 写入 eula=true 到 eula.txt
     let mut eula_file = File::create(format!("{folder}{MAIN_SEPARATOR}eula.txt"))
@@ -56,9 +57,9 @@ fn download(url: &str, path: &str) -> Result<(), Box<dyn Error>> {
         fs::create_dir_all(path).unwrap();
     }
     if path.exists() {
-        println!("File already exist, skipping download...\n");
+        info!("File already exist, skipping download...");
     } else {
-        println!("Downloading to {:?} from {}\n", path, url);
+        info!("Downloading to {:?} from {}", path, url);
         let mut f = fs::File::create(path)?;
         let mut easy = Easy::new();
         easy.url(url).unwrap();
@@ -69,7 +70,7 @@ fn download(url: &str, path: &str) -> Result<(), Box<dyn Error>> {
         })
         .unwrap();
         easy.perform().unwrap();
-        println!("Downloaded!");
+        info!("Downloaded!");
     }
     Ok(())
 }

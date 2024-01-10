@@ -1,22 +1,25 @@
 mod backup;
 
 use std::{
+    collections::HashMap,
     fmt::Display,
-    fs::File,
+    fs::{self, File},
     io::{self, BufRead, Read, Write},
     path::PathBuf,
     process::{Command, Stdio},
-    sync::{mpsc, Arc, Mutex},
+    sync::{
+        mpsc::{self, Sender},
+        Arc, Mutex,
+    },
     thread,
 };
 
-use derivative::Derivative;
+use log::{error, info};
 use regex::Regex;
 
 use crate::{
     config::ServerConfig,
     fabric::init_server_jar,
-    global_output_tx,
     utils::{path::split_parent_and_file, regex::player_regex},
 };
 
@@ -39,108 +42,60 @@ mod test {
 
     #[test]
     fn test_snapshop() {
-        let server = Server::new(
-            "1.20.2".to_string(),
-            ServerConfig {
-                dir: "/Users/azurice/Game/MCServer/1.20.2".to_string(),
-                jvm_options: String::new(),
-                version: "1.20.2".to_string(),
-                ..Default::default()
-            },
-        );
+        // let server = Server::new(
+        //     "1.20.2".to_string(),
+        //     ServerConfig {
+        //         dir: "/Users/azurice/Game/MCServer/1.20.2".to_string(),
+        //         jvm_options: String::new(),
+        //         version: "1.20.2".to_string(),
+        //         ..Default::default()
+        //     },
+        // );
 
-        println!("{:?}", server.get_snapshot_list());
-        server.make_snapshot();
-        println!("{:?}", server.get_snapshot_list());
-        server.del_snapshot();
-        println!("{:?}", server.get_snapshot_list());
+        // println!("{:?}", server.get_snapshot_list());
+        // server.make_snapshot();
+        // println!("{:?}", server.get_snapshot_list());
+        // server.del_snapshot();
+        // println!("{:?}", server.get_snapshot_list());
     }
 
     #[test]
     fn test_set_property() {
-        let server = Server::new(
-            "1.20.2".to_string(),
-            ServerConfig {
-                dir: "/Users/azurice/Game/MCServer/1.20.2".to_string(),
-                jvm_options: String::new(),
-                version: "1.20.2".to_string(),
-                ..Default::default()
-            },
-        );
-        server.set_property("difficulty", "hard");
-        server.set_property("server-ip", "0.0.0.0");
+        // let server = Server::new(
+        //     "1.20.2".to_string(),
+        //     ServerConfig {
+        //         dir: "/Users/azurice/Game/MCServer/1.20.2".to_string(),
+        //         jvm_options: String::new(),
+        //         version: "1.20.2".to_string(),
+        //         ..Default::default()
+        //     },
+        // );
+        // server.set_property("difficulty", "hard");
+        // server.set_property("server-ip", "0.0.0.0");
     }
 }
 
-#[derive(Derivative, Clone)]
-#[derivative(Default)]
 pub struct Server {
-    name: String,
-    config: ServerConfig,
+    pub name: String,
+    pub config: ServerConfig,
     input_tx: Option<mpsc::Sender<String>>,
-    command_tx: Option<mpsc::Sender<String>>,
+    command_tx: mpsc::Sender<String>,
+    pub running: bool,
 }
 
-pub fn run(server: Arc<Mutex<Server>>) {
-    let cloned_server = server.clone();
-    // 命令处理线程
-    let (command_tx, command_rx) = mpsc::channel::<String>();
-    let _server = cloned_server.clone();
-    thread::spawn(move || {
-        let server = _server;
-        while let Ok(command_str) = command_rx.recv() {
-            let command_str = command_str.replace("\r\n", "\n");
-            let command_str = command_str.strip_prefix('#').unwrap();
-            let command_str = command_str.strip_suffix('\n').unwrap_or(command_str);
-
-            let split: Vec<&str> = command_str.split(' ').collect();
-            let command = split[0];
-            let args = &split[1..];
-
-            let mut server = server.lock().unwrap();
-            println!("[server/{}]: command: {} {:?}", server.name, command, args);
-            match command {
-                "bksnap" => {
-                    if args.is_empty() || args[0] == "list" {
-                        let snapshot_list = server.get_snapshot_list();
-                        server.say("snapshots: ");
-                        for (i, snapshot) in snapshot_list.into_iter().enumerate() {
-                            server.say(format!("{i}: {snapshot:?}"))
-                        }
-                    } else if args[0] == "make" {
-                        while server.get_snapshot_list().len() >= 10 {
-                            server.del_snapshot()
-                        }
-                        server.say("saving snapshot...");
-                        server.make_snapshot();
-                        server.say("saved snapshot")
-                    } else if args.len() == 2 && args[0] == "load" {
-                        // TODO: load snap backup
-                    }
-                }
-                "bkarch" => {
-                    if args.is_empty() || args[0] == "list" {
-                        println!("bkarch list, not implemented yet")
-                        // TODO: show arch backup
-                    } else if args[0] == "make" {
-                        println!("bkarch make, not implemented yet")
-                        // let comment = args[1..].join(" ");
-                        // TODO: make arch backup
-                    } else if args.len() == 2 && args[0] == "load" {
-                        println!("bkarch load, not implemented yet")
-                        // TODO: load arch backup
-                    }
-                }
-                _ => {
-                    println!("unknown command")
-                }
-            }
+pub fn run(server: Arc<Mutex<Server>>, global_output_tx: Sender<String>) -> Result<(), String> {
+    {
+        let server = server.lock().unwrap();
+        if server.running {
+            error!("the server is already running");
+            return Err("the server is already running".to_string());
         }
-        println!("exit1")
-    });
+    }
 
+    let cloned_server = server.clone();
     let mut server = server.lock().unwrap();
-    println!("[server/{}]: starting server...", server.name);
+    server.running = true;
+    info!("starting server<{}>...", server.name);
     let mut child = server
         .command()
         .stdin(Stdio::piped())
@@ -157,15 +112,13 @@ pub fn run(server: Arc<Mutex<Server>>) {
     let (input_tx, input_rx) = mpsc::channel::<String>();
     server.input_tx = Some(input_tx);
 
-    let _command_tx = command_tx.clone();
-    let _server = cloned_server.clone();
+    // consumes input_rx
+    let _command_tx = server.command_tx.clone();
     thread::spawn(move || {
-        // let server = _server;
-        let command_tx = _command_tx;
         let mut writer = io::BufWriter::new(child_in);
         while let Ok(input) = input_rx.recv() {
             if input.starts_with('#') {
-                command_tx
+                _command_tx
                     .send(input)
                     .expect("failed to send to command_tx");
             } else {
@@ -173,60 +126,139 @@ pub fn run(server: Arc<Mutex<Server>>) {
                 writer.flush().expect("failed to flush");
             }
         }
-        // println!("exit2")
+        info!("exit thread_input_rx")
     });
 
     // 服务端 输出处理线程
     // 通过 global_tx 发送给主线程统一处理
-    let global_output_tx = global_output_tx();
-    let _command_tx = command_tx.clone();
+    // let global_output_tx = global_output_tx();
+    let _command_tx = server.command_tx.clone();
     let _server = cloned_server.clone();
     thread::spawn(move || {
-        let command_tx = _command_tx;
-        let server = _server;
-
         let mut reader = io::BufReader::new(child_out);
         let mut buf = String::new();
-        while let Ok(size) = reader.read_line(&mut buf) {
-            if size == 0 {
-                break;
-            }
-            if let Some(cap) = player_regex().captures(&buf) {
-                let _player_name = cap.get(1).unwrap().as_str();
-                let content = cap.get(2).unwrap().as_str();
-                if content.starts_with('#') {
-                    command_tx
-                        .send(content.to_string())
-                        .expect("failed to send to command_tx");
+        loop {
+            match reader.read_line(&mut buf) {
+                Err(err) => {
+                    // TODO: 为何初次运行会有一段是 stream did not contain valid UTF-8？
+                    error!("{}", err)
+                }
+                Ok(size) => {
+                    if size == 0 {
+                        info!("thread_read_output: readed Ok(0)");
+                        break;
+                    }
+                    if let Some(cap) = player_regex().captures(&buf) {
+                        let _player_name = cap.get(1).unwrap().as_str();
+                        let content = cap.get(2).unwrap().as_str();
+                        if content.starts_with('#') {
+                            _command_tx
+                                .send(content.to_string())
+                                .expect("failed to send to command_tx");
+                        }
+                    }
+                    global_output_tx
+                        .send(buf.clone())
+                        .expect("Failed to send to global_tx");
+                    // println!("{buf}");
                 }
             }
-            global_output_tx
-                .send(buf.clone())
-                .expect("Failed to send to global_tx");
-            // println!("{buf}");
         }
-        println!("server end");
+        info!("server end");
         child.wait().expect("failed to wait");
-        // println!("exit3");
+        info!("exit thread_read_output");
 
-        // Drop 掉 command_tx 和 input_tx 使得上面的两个线程可以退出循环
-        let mut server = server.lock().unwrap();
-        server.command_tx = None;
+        // Drop 掉 input_tx 使得上面的线程可以退出循环
+        let mut server = _server.lock().unwrap();
         server.input_tx = None;
+        server.running = false;
     });
+    Ok(())
 }
 
 impl Server {
+    pub fn init(name: String, config: ServerConfig) -> Arc<Mutex<Self>> {
+        let (command_tx, command_rx) = mpsc::channel::<String>();
+
+        let server = Self {
+            name,
+            config,
+            input_tx: None,
+            command_tx,
+            running: false,
+        };
+        let server = Arc::new(Mutex::new(server));
+
+        // 命令处理线程
+        // 会一直运行，直至自身被 drop 掉（即 command_tx）
+        // consumes command_rx
+        let _server = server.clone();
+        thread::spawn(move || {
+            // let server = _server;
+            while let Ok(command_str) = command_rx.recv() {
+                let command_str = command_str.replace("\r\n", "\n");
+                let command_str = command_str.strip_prefix('#').unwrap();
+                let command_str = command_str.strip_suffix('\n').unwrap_or(command_str);
+
+                let split: Vec<&str> = command_str.split(' ').collect();
+                let command = split[0];
+                let args = &split[1..];
+
+                let mut server = _server.lock().unwrap();
+                println!("[server/{}]: command: {} {:?}", server.name, command, args);
+                match command {
+                    "bksnap" => {
+                        if args.is_empty() || args[0] == "list" {
+                            let snapshot_list = server.get_snapshot_list();
+                            server.say("snapshots: ");
+                            for (i, snapshot) in snapshot_list.into_iter().enumerate() {
+                                server.say(format!("{i}: {snapshot:?}"))
+                            }
+                        } else if args[0] == "make" {
+                            while server.get_snapshot_list().len() >= 10 {
+                                server.del_snapshot()
+                            }
+                            server.say("saving snapshot...");
+                            server.make_snapshot();
+                            server.say("saved snapshot")
+                        } else if args.len() == 2 && args[0] == "load" {
+                            // TODO: load snap backup
+                        }
+                    }
+                    "bkarch" => {
+                        if args.is_empty() || args[0] == "list" {
+                            println!("bkarch list, not implemented yet")
+                            // TODO: show arch backup
+                        } else if args[0] == "make" {
+                            println!("bkarch make, not implemented yet")
+                            // let comment = args[1..].join(" ");
+                            // TODO: make arch backup
+                        } else if args.len() == 2 && args[0] == "load" {
+                            println!("bkarch load, not implemented yet")
+                            // TODO: load arch backup
+                        }
+                    }
+                    _ => {
+                        println!("unknown command")
+                    }
+                }
+            }
+            println!("exit thread_command_rx")
+        });
+        server
+    }
+
     pub fn command(&self) -> Command {
-        // init server.properties
-        for (key, value) in &self.config.properties {
-            self.set_property(key, value);
-        }
         // init jar
         let (dir, filename) = split_parent_and_file(
             init_server_jar(&self.config.dir, &self.config.version)
                 .expect("failed to init server jar"),
         );
+        // init server.properties
+        info!("setting properties...");
+        if let Err(err) = self.set_properties(&self.config.properties) {
+            error!("failed to set properties: {:?}, skipped", err);
+        }
 
         let mut command = Command::new("java");
         let mut args = vec!["-jar", &filename, "--nogui"];
@@ -238,39 +270,21 @@ impl Server {
         command
     }
 
-    pub fn new(name: String, config: ServerConfig) -> Self {
-        Self {
-            name,
-            config,
-            ..Default::default()
-        }
-    }
-
-    pub fn set_property<S: AsRef<str>>(&self, key: S, value: S) {
-        let key = key.as_ref();
-        let value = value.as_ref();
-
-        let mut buf = String::new();
+    pub fn set_properties(&self, properties: &HashMap<String, String>) -> Result<(), String> {
         let property_file = PathBuf::from(&self.config.dir).join("server.properties");
+        let mut buf = fs::read_to_string(&property_file)
+            .map_err(|err| format!("failed to read server.properties: {:?}", err))?;
 
-        {
-            let mut property_file =
-                File::open(&property_file).expect("failed to open server.properties");
-
-            property_file
-                .read_to_string(&mut buf)
-                .expect("failed to read properties");
+        for (key, value) in properties {
+            info!("setting property [{}] to [{}]", key, value);
+            let regex = Regex::new(format!(r"{}=([^#\n\r]*)", key).as_str()).unwrap();
+            buf = regex
+                .replace(&buf, format!("{}={}", key, value))
+                .to_string();
         }
-
-        let regex = Regex::new(format!(r"{}=([^#\n\r]+)", key).as_str()).unwrap();
-        let res = regex.replace(&buf, format!("{}={}", key, value));
-        // println!("{}", res);
-
-        let mut property_file =
-            File::create(&property_file).expect("failed to open server.properties");
-        property_file
-            .write_all(res.as_bytes())
-            .expect("failed to write server.properties");
+        fs::write(property_file, buf.as_bytes())
+            .map_err(|err| format!("failed to write server.properties: {:?}", err))?;
+        Ok(())
     }
 
     // pub fn load_snapshot(&self, id: usize) {

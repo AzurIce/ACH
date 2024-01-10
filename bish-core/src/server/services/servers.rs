@@ -4,6 +4,7 @@ use axum::{
     extract::{Path, State},
     Json,
 };
+use log::info;
 use reqwest::StatusCode;
 use serde::Serialize;
 use serde_json::json;
@@ -18,21 +19,21 @@ struct ServerInfo {
 }
 
 pub async fn get_servers(State(state): State<Arc<Core>>) -> (StatusCode, Json<serde_json::Value>) {
-    let mut servers = vec![];
-    let running_servers = state.running_servers.lock().unwrap();
-
-    for (name, config) in &state.config.servers {
-        servers.push(ServerInfo {
+    let mut res = vec![];
+    let servers = state.servers.lock().unwrap();
+    for (name, server) in servers.iter() {
+        let server = server.lock().unwrap();
+        res.push(ServerInfo {
             name: name.clone(),
-            config: config.clone(),
-            running: running_servers.get(name).is_some(),
+            config: server.config.clone(),
+            running: server.running,
         })
     }
 
     (
         StatusCode::OK,
         Json(json!({
-            "servers": servers
+            "servers": res
         })),
     )
 }
@@ -41,23 +42,21 @@ pub async fn start_server(
     State(state): State<Arc<Core>>,
     Path(name): Path<String>,
 ) -> (StatusCode, Json<serde_json::Value>) {
-    if state.running_servers.lock().unwrap().get(&name).is_none() {
-        tokio::task::block_in_place(|| {
-            state.run_server(name);
-        });
-        (
+    info!("start_server: {}", name);
+    let res = tokio::task::spawn_blocking(move || state.run_server(name)).await.expect("failed to exec");
+    match res {
+        Ok(_) => (
             StatusCode::OK,
             Json(json!({
                 "msg": "success"
             })),
-        )
-    } else {
-        (
+        ),
+        Err(err) => (
             StatusCode::BAD_REQUEST,
             Json(json!({
-                "msg": "The server is already running"
+                "msg": err
             })),
-        )
+        ),
     }
 }
 
@@ -65,10 +64,8 @@ pub async fn stop_server(
     State(state): State<Arc<Core>>,
     Path(name): Path<String>,
 ) -> (StatusCode, Json<serde_json::Value>) {
-    if state.running_servers.lock().unwrap().get(&name).is_some() {
+    if state.servers.lock().unwrap().get(&name).is_some() {
         state.stop_server(name);
-        // let mut server = server.lock().unwrap();
-        // server.writeln("stop");
         (
             StatusCode::OK,
             Json(json!({
