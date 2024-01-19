@@ -119,7 +119,10 @@ pub mod regex {
     [16:00:06] [Server thread/INFO]: _AzurIce_ lost connection: Disconnected
     [16:00:06] [Server thread/INFO]: _AzurIce_ left the game
      */
-    const PLAYER: &str = r"]: <(.*?)> (.*)";
+    /*
+    [19:23:48] [Server thread/INFO]: [Not Secure] <_AzurIce_> #bksnap make
+     */
+    const PLAYER: &str = r"]: (?:\[Not Secure] )?<(.*?)> (.*)";
     pub fn player_regex() -> &'static Regex {
         static PLAYER_REGEX: OnceLock<Regex> = OnceLock::new();
         PLAYER_REGEX.get_or_init(|| Regex::new(PLAYER).expect("regex err"))
