@@ -18,62 +18,10 @@ use log::{error, info};
 use regex::Regex;
 
 use crate::{
-    config::ServerConfig,
+    config::{ServerConfig, ModInfo},
     fabric::init_server_jar,
     utils::{path::split_parent_and_file, regex::player_regex},
 };
-
-#[cfg(test)]
-mod test {
-    use crate::config::ServerConfig;
-
-    use super::Server;
-
-    #[test]
-    fn t() {
-        let s: [i32; 1] = [1];
-        let b = s[0..].to_vec();
-        let c = s[1..].to_vec();
-        let d = s[2..].to_vec();
-        println!("{:?}", b);
-        println!("{:?}", c);
-        println!("{:?}", d);
-    }
-
-    #[test]
-    fn test_snapshop() {
-        // let server = Server::new(
-        //     "1.20.2".to_string(),
-        //     ServerConfig {
-        //         dir: "/Users/azurice/Game/MCServer/1.20.2".to_string(),
-        //         jvm_options: String::new(),
-        //         version: "1.20.2".to_string(),
-        //         ..Default::default()
-        //     },
-        // );
-
-        // println!("{:?}", server.get_snapshot_list());
-        // server.make_snapshot();
-        // println!("{:?}", server.get_snapshot_list());
-        // server.del_snapshot();
-        // println!("{:?}", server.get_snapshot_list());
-    }
-
-    #[test]
-    fn test_set_property() {
-        // let server = Server::new(
-        //     "1.20.2".to_string(),
-        //     ServerConfig {
-        //         dir: "/Users/azurice/Game/MCServer/1.20.2".to_string(),
-        //         jvm_options: String::new(),
-        //         version: "1.20.2".to_string(),
-        //         ..Default::default()
-        //     },
-        // );
-        // server.set_property("difficulty", "hard");
-        // server.set_property("server-ip", "0.0.0.0");
-    }
-}
 
 pub struct Server {
     pub name: String,
@@ -177,7 +125,20 @@ pub fn run(server: Arc<Mutex<Server>>, global_output_tx: Sender<String>) -> Resu
 }
 
 impl Server {
+    pub fn init_properties(&self) -> Result<(), String> {
+        self.set_properties(&self.config.properties)
+    }
+
+    // pub fn init_mods(&self) {
+    //     for (mod_slug, mod_info) in self.config.mods {
+    //         match mod_info {
+    //             ModInfo::Latest() 
+    //         }
+    //     }
+    // }
+
     pub fn init(name: String, config: ServerConfig) -> Arc<Mutex<Self>> {
+        info!("server initializing...");
         let (command_tx, command_rx) = mpsc::channel::<String>();
 
         let server = Self {
@@ -187,6 +148,17 @@ impl Server {
             command_tx,
             running: false,
         };
+
+        info!("server initializing(properties)...");
+        if let Err(err) = server.init_properties() {
+            error!("server initializing(properties): error occured: {:?}", err)
+        }
+
+        info!("server initializing(mods)...");
+        // server.init_mods();
+        
+
+
         let server = Arc::new(Mutex::new(server));
 
         // 命令处理线程

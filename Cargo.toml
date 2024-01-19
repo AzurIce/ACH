@@ -1,0 +1,4 @@
+[workspace]
+members = ["bish-cli", "bish-core"]
+[workspace.dependencies]
+bish-core = { path = "./bish-core" }

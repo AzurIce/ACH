@@ -9,6 +9,8 @@ use std::{
 use curl::easy::Easy;
 use log::info;
 
+use crate::utils;
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -38,7 +40,7 @@ pub fn init_server_jar(folder: &str, version: &str) -> Result<String, Box<dyn Er
     // 下载服务端 jar
     info!("[fabric/init_version]: downloading server_jar to {folder}...");
     let path = format!("{folder}{MAIN_SEPARATOR}fabric-server-mc.{version}-loader.{loader_version}-launcher.{installer_version}.jar");
-    download(&url, &path)?;
+    utils::download(&url, &path)?;
     info!("[fabric/init_version]: Downloaded to {path}");
 
     // 写入 eula=true 到 eula.txt
@@ -49,28 +51,4 @@ pub fn init_server_jar(folder: &str, version: &str) -> Result<String, Box<dyn Er
         .expect("failed to write into eula file");
 
     Ok(path)
-}
-
-fn download(url: &str, path: &str) -> Result<(), Box<dyn Error>> {
-    let path = Path::new(&path);
-    if !path.parent().unwrap().exists() {
-        fs::create_dir_all(path).unwrap();
-    }
-    if path.exists() {
-        info!("File already exist, skipping download...");
-    } else {
-        info!("Downloading to {:?} from {}", path, url);
-        let mut f = fs::File::create(path)?;
-        let mut easy = Easy::new();
-        easy.url(url).unwrap();
-        easy.follow_location(true).unwrap();
-        easy.write_function(move |data| {
-            f.write_all(data).unwrap();
-            Ok(data.len())
-        })
-        .unwrap();
-        easy.perform().unwrap();
-        info!("Downloaded!");
-    }
-    Ok(())
 }

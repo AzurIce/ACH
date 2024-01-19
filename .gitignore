@@ -8,3 +8,4 @@ statik/
 .github/
 /config.yml
 quilt-installer*
+target

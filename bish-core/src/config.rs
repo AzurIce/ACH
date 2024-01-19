@@ -38,6 +38,13 @@ pub struct ServerConfig {
     pub jvm_options: String,
     pub version: String,
     pub properties: HashMap<String, String>,
+    pub mods: HashMap<String, ModInfo>
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[serde(untagged)]
+pub enum ModInfo {
+    SpecificVersion { version_id: String },
 }
 
 pub fn load_config() -> Result<BishConfig, Box<dyn Error>> {

@@ -21,3 +21,18 @@ spawn-protection = "0"
 view-distance = "16"
 white-list = "true"
 ```
+
+## 使用
+
+使用如下命令来创建一个 Bish 目录：
+
+```
+bish new xxx
+```
+
+或者在一个目录下使用以下命令来将其初始化为 Bish 目录：
+
+```
+bish init xxx
+```
+

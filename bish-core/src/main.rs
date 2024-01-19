@@ -3,6 +3,8 @@ mod core;
 mod fabric;
 mod server;
 mod utils;
+#[allow(unused)]
+mod modrinth;
 
 use core::Core;
 use std::{error::Error, sync::Arc};
