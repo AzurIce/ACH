@@ -4,7 +4,7 @@ use std::{fs, path::Path};
 
 use bish_cli::config::Config;
 use bish_cli::core::loader::Loader;
-use bish_cli::core::server::run;
+use bish_cli::core::server::Core;
 use clap::Parser;
 use log::{info, warn};
 use regex::Regex;
@@ -132,8 +132,9 @@ fn main() {
             info!("checking mods...");
             // TODO: check mods
 
-            info!("launching...");
-            run(bish_config);
+            info!("the core is running...");
+            Core::run(bish_config)
+            // run(bish_config);
         }
     }
 }
