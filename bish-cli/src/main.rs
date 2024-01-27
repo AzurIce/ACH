@@ -4,7 +4,7 @@ use std::{fs, path::Path};
 
 use bish_cli::config::Config;
 use bish_cli::core::loader::Loader;
-use bish_cli::core::server::Core;
+use bish_cli::core::Core;
 use clap::Parser;
 use log::{info, warn};
 use regex::Regex;
@@ -93,7 +93,6 @@ fn main() {
             info!("loading config...");
             let bish_config =
                 fs::read_to_string(dir.join("Bish.toml")).expect("failed to read config");
-            info!("parsing config...");
             let bish_config =
                 toml::from_str::<Config>(&bish_config).expect("failed to parse config");
 
