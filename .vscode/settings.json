@@ -1,11 +1,54 @@
 {
-    "hidefiles.configurationType": "global",
+    "hidefiles.configurationType": "local",
+    "hidefiles.globalConfig": {
+        "profiles": [
+            {
+                "name": "Default",
+                "detail": "",
+                "description": "Test",
+                "hidden": [
+                    ".vscode/"
+                ]
+            },
+            {
+                "name": "Strict",
+                "detail": "Hide everything not immediately required",
+                "hidden": [
+                    "$Default"
+                ]
+            },
+            {
+                "hidden": [
+                    "internal/",
+                    "server/",
+                    "core/",
+                    "go.sum",
+                    "go.mod",
+                    "main.go",
+                    "config.yml",
+                    "build.bat"
+                ],
+                "name": "Hide go",
+                "description": "",
+                "detail": "",
+                "peek": []
+            }
+        ]
+    },
     "files.exclude": {
         "**/.git": true,
         "**/.svn": true,
         "**/.hg": true,
         "**/CVS": true,
-        "**/.DS_Store": true
+        "**/.DS_Store": true,
+        "internal/": true,
+        "server/": true,
+        "core/": true,
+        "go.sum": true,
+        "go.mod": true,
+        "main.go": true,
+        "config.yml": true,
+        "build.bat": true
     },
-    "hidefiles.selectedProfile": "Show All Files"
+    "hidefiles.selectedProfile": "Hide go"
 }

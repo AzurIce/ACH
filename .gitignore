@@ -9,3 +9,4 @@ statik/
 /config.yml
 quilt-installer*
 target
+.direnv
