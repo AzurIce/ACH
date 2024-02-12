@@ -10,3 +10,5 @@ statik/
 quilt-installer*
 target
 .direnv
+
+test-server

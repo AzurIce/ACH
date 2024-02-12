@@ -33,18 +33,19 @@
             # libusb1
             # openssl
             # pkg-config
+            curl
             (rust-bin.nightly.latest.default.override {
               extensions = [ "rust-src" ];
             })
           ]
-          # ++
-          # (with pkgs.darwin.apple_sdk.frameworks; pkgs.lib.optionals pkgs.stdenv.isDarwin [
-          #   System
+          ++
+          (with pkgs.darwin.apple_sdk.frameworks; pkgs.lib.optionals pkgs.stdenv.isDarwin [
+            SystemConfiguration
           #   IOKit
-          #   Security
-          #   CoreFoundation
+            Security
+            CoreFoundation
           #   AppKit
-          # ])
+          ])
           ;
         };
       }
