@@ -1,6 +1,6 @@
 use std::{error::Error, path::Path, process::Command, fs, io::Write};
 
-use bish_core::utils::download;
+use ice_core::utils::download;
 use clap::ValueEnum;
 use log::info;
 use serde::{Deserialize, Serialize};

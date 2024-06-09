@@ -1,4 +1,6 @@
-# BlueIce Minecraft Server Helper
+# Ice
+
+A Minecraft Server Helper
 
 重构ing...
 

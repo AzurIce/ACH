@@ -2,9 +2,9 @@
 use std::env;
 use std::{fs, path::Path};
 
-use bish_cli::config::Config;
-use bish_cli::core::loader::Loader;
-use bish_cli::core::Core;
+use ice_cli::config::Config;
+use ice_cli::core::loader::Loader;
+use ice_cli::core::Core;
 use clap::Parser;
 use log::{info, warn};
 use regex::Regex;

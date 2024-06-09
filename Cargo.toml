@@ -1,5 +1,5 @@
 [workspace]
 resolver = "2"
-members = ["bish-cli", "bish-core"]
+members = ["ice-cli", "ice-core"]
 [workspace.dependencies]
-bish-core = { path = "./bish-core" }
+ice-core = { path = "./ice-core" }

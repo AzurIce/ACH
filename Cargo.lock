@@ -177,40 +177,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "9d297deb1925b89f2ccc13d7635fa0714f12c87adce1c75356b39ca9b7178567"
 
 [[package]]
-name = "bish-cli"
-version = "0.1.0"
-dependencies = [
- "bish-core",
- "clap",
- "curl",
- "env_logger",
- "log",
- "regex",
- "reqwest",
- "serde",
- "toml",
-]
-
-[[package]]
-name = "bish-core"
-version = "0.1.0"
-dependencies = [
- "axum",
- "chrono",
- "curl",
- "derivative",
- "dirs",
- "env_logger",
- "log",
- "regex",
- "reqwest",
- "serde",
- "serde_json",
- "tokio",
- "toml",
-]
-
-[[package]]
 name = "bitflags"
 version = "1.3.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -661,6 +627,40 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f31827a206f56af32e590ba56d5d2d085f558508192593743f16b2306495269f"
 dependencies = [
  "cc",
+]
+
+[[package]]
+name = "ice-cli"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "curl",
+ "env_logger",
+ "ice-core",
+ "log",
+ "regex",
+ "reqwest",
+ "serde",
+ "toml",
+]
+
+[[package]]
+name = "ice-core"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "chrono",
+ "curl",
+ "derivative",
+ "dirs",
+ "env_logger",
+ "log",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
+ "toml",
 ]
 
 [[package]]

@@ -1,6 +1,6 @@
 use std::{sync::{mpsc, Arc, Mutex}, thread, io::stdin, path::{Path, PathBuf}, fs::{self, DirEntry}};
 
-use bish_core::utils::{time::get_cur_time_str, fs::copy_dir};
+use ice_core::utils::{time::get_cur_time_str, fs::copy_dir};
 use log::{info, error, warn};
 
 use crate::config::Config;

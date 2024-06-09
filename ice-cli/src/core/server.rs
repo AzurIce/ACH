@@ -7,7 +7,7 @@ use std::{
 
 use log::{info, error};
 
-use bish_core::utils::regex::player_regex;
+use ice_core::utils::regex::player_regex;
 
 use crate::{config::Config, core::loader::Loader};
 
